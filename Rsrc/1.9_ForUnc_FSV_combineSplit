@@ -1,0 +1,24 @@
+# Run settings 
+library(devtools)
+source_url("https://raw.githubusercontent.com/ForModLabUHel/satRuns/master/Rsrc/settings.r")
+if(file.exists("localSettings.r")) {source("localSettings.r")} # use settings file from local directory if one exists
+
+###set working directory
+setwd(generalPath)
+
+if(splitRun){
+  pMvn_bind <- data.table()
+  
+  # Iterate through all split parts of pMvn and bind split parts to a single data table 
+  for (i in splitRange) {
+    pMvn_file <- load(paste0("pMvn_ForUnc_split",i,".rdata"))
+    pMvn_split <- get(pMvn_file)
+    rm(pMvn_file)
+    
+    pMvn_bind <- rbindlist(list(pMvn_bind, pMvn_split))
+    
+    rm(pMvn_split)
+  }
+  
+  pMvn <- pMvn_bind
+  save(pMvn,file="pMvn_ForUnc.rdata") # pMvn finished for the whole dataset

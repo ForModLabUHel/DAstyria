@@ -1,6 +1,7 @@
 library(devtools)
 # Run settings (if modifiedSettings is not set to TRUE in batch job script, default settings from Github will be used)
-source_url("https://raw.githubusercontent.com/ForModLabUHel/satRuns/master/Rsrc/settings.r")
+source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc/settings.r")
+
 if(file.exists("localSettings.r")) {source("localSettings.r")} # use settings in local directory if one exists
 
 
@@ -27,9 +28,9 @@ calError <- function(dataX){
   resids$G <- dataX$G.mea- dataX$G.est
   resids$D <- dataX$D.mea- dataX$D.est
   resids$H <- (dataX$H.mea- dataX$H.est)/10
-  resids$BAp <- (dataX$PINE.mea- dataX$PINE.est)
-  resids$BAsp <- (dataX$SPRUCE.mea- dataX$SPRUCE.est)
-  resids$BAb <- (dataX$BL.mea- dataX$BL.est)
+  resids$BAcon <- (dataX$Conifer.mea- dataX$Conifer.est)
+  # resids$BAsp <- (dataX$SPRUCE.mea- dataX$SPRUCE.est)
+  resids$BAbl <- (dataX$BL.mea- dataX$BL.est)
   sigmaFSVda <- cov(resids)
   muFSVda <- colMeans(resids)
   ###include V in the multivariate normal distribution for ite type DA

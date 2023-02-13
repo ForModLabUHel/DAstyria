@@ -68,7 +68,7 @@ errData$y2015$all <- calError(data2015)
 # errData$t35WMN <- calError(dataAll[S2Tile == "35WMN"])
 
 if(CSCrun){
-  save(errData,file="/scratch/project_2000994/PREBASruns/assessCarbon/data/inputUncer.rdata") # in CSC
+  save(errData,file="/scratch/project_2000994/PREBASruns/Styria/data/inputUncer.rdata") # in CSC
 }else{
   save(errData,file="data/inputUncer.rdata")
 }

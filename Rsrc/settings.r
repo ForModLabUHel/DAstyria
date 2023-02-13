@@ -44,8 +44,13 @@ if(!CSCrun){
 require(Rprebasso)
 
 ####indicate rasterPath and climID path
-generalPath <- "C:/Users/minunno/Documents/research/assessCarbon/data/Finland/AC_training_FI_34VEQ/"
-rasterPath <- paste0(generalPath,"rasters/")
+generalPath <- "C:/Users/minunno/Documents/research/ForestCarbonMonitoring/FCM_CNN/data/Forest_Structure_layers/"
+
+rasterPath <- generalPath
+
+rasterPath2015 <- paste0(generalPath,"2015/")
+rasterPath2018 <- paste0(generalPath,"2018/")
+rasterPath2021 <- paste0(generalPath,"2021/")
 procDataPath <- paste0(generalPath,"procData/")
 outPath <- paste0(generalPath,"output/")
 initPrebasPath <- paste0(generalPath,"initPrebas/")
@@ -56,58 +61,71 @@ climIDpath <- "C:/Users/minunno/Documents/research/FinSeg/some stuff/climID10km.
 
 
 startYearWeather <- 1971 ###1971 for Finnish weather dataBase
-startingYear <- 2016  #2019
+startingYear <- 2015  #2019
 year2 <- 2019 ###year of the second measurement
-yearEnd <- 2019     #2024
+yearEnd <- 2021     #2024
 
 
 ####indicate raster files
-tileX = "34VEQ"
-areaID <- "FI"
-baRast <-  paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_BA_10M_1CHS_8BITS.tif")
-blPerRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_BLP_10M_1CHS_8BITS.tif")
-dbhRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_DIA_10M_1CHS_8BITS.tif")
-vRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_GSV_10M_1CHS_16BITS.tif")
-hRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_HGT_10M_1CHS_16BITS.tif")
-pinePerRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_P_pine_10M_1CHS_8BITS.tif")
-sprucePerRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_P_spruce_10M_1CHS_8BITS.tif")
-siteTypeRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_SITE_10M_1CHS_8BITS.tif")
-siteTypeRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_SITE_10M_1CHS_8BITS.tif")
-vRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_GSV_10M_1CHS_16BITS.tif")
-baRast2 <-  paste0(rasterPath,areaID,"_",tileX,"-",year2,"_BA_10M_1CHS_8BITS.tif")
-dbhRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_DIA_10M_1CHS_8BITS.tif")
-hRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_HGT_10M_1CHS_16BITS.tif")
-pinePerRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_P_pine_10M_1CHS_8BITS.tif")
-sprucePerRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_P_spruce_10M_1CHS_8BITS.tif")
-blPerRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_BLP_10M_1CHS_8BITS.tif")
-mgmtmaskRast <- paste0(rasterPath, areaID, "_", tileX, "_mgmtmask.tif")
+# tileX = "34VEQ"
+# areaID <- "FI"
+year <- 2015
+baRast2015 <-  paste0(rasterPath,year,"/FCM_STY_2015_G_10M_8BITS-Styria.tif")
+blPerRast2015 <- paste0(rasterPath,year,"/FCM_STY_2015_BLP_10M_8BITS-Styria.tif")
+dbhRast2015 <- paste0(rasterPath,year,"/FCM_STY_2015_D_10M_8BITS-Styria.tif")
+vRast2015 <- paste0(rasterPath,year,"/FCM_STY_2015_V_10M_8BITS-Styria.tif")
+hRast2015 <- paste0(rasterPath,year,"/FCM_STY_2015_H_10M_8BITS-Styria.tif")
+conifPerRast2015 <- paste0(rasterPath,year,"/FCM_STY_2015_CP_10M_8BITS-Styria.tif")
+siteTypeRast2015 <- paste0(rasterPath,year,"/FCM_STY_2015_SITE_10M_8BITS-Styria.tif")
+# pinePerRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_P_pine_10M_1CHS_8BITS.tif")
+# sprucePerRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_P_spruce_10M_1CHS_8BITS.tif")
+year <- 2018
+baRast2018 <-  paste0(rasterPath,year,"/FCM_STY_2018_G_10M_8BITS-Styria.tif")
+blPerRast2018 <- paste0(rasterPath,year,"/FCM_STY_2018_BLP_10M_8BITS-Styria.tif")
+dbhRast2018 <- paste0(rasterPath,year,"/FCM_STY_2018_D_10M_8BITS-Styria.tif")
+vRast2018 <- paste0(rasterPath,year,"/FCM_STY_2018_V_10M_8BITS-Styria.tif")
+hRast2018 <- paste0(rasterPath,year,"/FCM_STY_2018_H_10M_8BITS-Styria.tif")
+conifPerRast2018 <- paste0(rasterPath,year,"/FCM_STY_2018_CP_10M_8BITS-Styria.tif")
+siteTypeRast2018 <- paste0(rasterPath,year,"/FCM_STY_2018_SITE_10M_8BITS-Styria.tif")
+# pinePerRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_P_pine_10M_1CHS_8BITS.tif")
+# sprucePerRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_P_spruce_10M_1CHS_8BITS.tif")
+year <- 2021
+baRast2021 <-  paste0(rasterPath,year,"/FCM_STY_2021_G_10M_8BITS-Styria.tif")
+blPerRast2021 <- paste0(rasterPath,year,"/FCM_STY_2021_BLP_10M_8BITS-Styria.tif")
+dbhRast2021 <- paste0(rasterPath,year,"/FCM_STY_2021_D_10M_8BITS-Styria.tif")
+vRast2021 <- paste0(rasterPath,year,"/FCM_STY_2021_V_10M_8BITS-Styria.tif")
+hRast2021 <- paste0(rasterPath,year,"/FCM_STY_2021_H_10M_8BITS-Styria.tif")
+conifPerRast2021 <- paste0(rasterPath,year,"/FCM_STY_2021_CP_10M_8BITS-Styria.tif")
+siteTypeRast2021 <- paste0(rasterPath,year,"/FCM_STY_2021_SITE_10M_8BITS-Styria.tif")
+# pinePerRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_P_pine_10M_1CHS_8BITS.tif")
+# sprucePerRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_P_spruce_10M_1CHS_8BITS.tif")
 
 # Source of tile-specific settings. Defined in batch job script. When set to TRUE will overwrite the tile-specific 
 # settings in this script (lines: 41-49, 53-56, 72-81) with settings from filepath in mySettings variable.
-if(exists("tileSettings")){
-  if(tileSettings) {
-    source(mySettings)
-    
-    # Indicate raster files
-    baRast <-  paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_BA_10M_1CHS_8BITS.tif")
-    blPerRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_BLP_10M_1CHS_8BITS.tif")
-    dbhRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_DIA_10M_1CHS_8BITS.tif")
-    vRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_GSV_10M_1CHS_16BITS.tif")
-    hRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_HGT_10M_1CHS_16BITS.tif")
-    pinePerRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_P_pine_10M_1CHS_8BITS.tif")
-    sprucePerRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_P_spruce_10M_1CHS_8BITS.tif")
-    siteTypeRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_SITE_10M_1CHS_8BITS.tif")
-    siteTypeRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_SITE_10M_1CHS_8BITS.tif")
-    vRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_GSV_10M_1CHS_16BITS.tif")
-    baRast2 <-  paste0(rasterPath,areaID,"_",tileX,"-",year2,"_BA_10M_1CHS_8BITS.tif")
-    dbhRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_DIA_10M_1CHS_8BITS.tif")
-    hRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_HGT_10M_1CHS_16BITS.tif")
-    pinePerRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_P_pine_10M_1CHS_8BITS.tif")
-    sprucePerRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_P_spruce_10M_1CHS_8BITS.tif")
-    blPerRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_BLP_10M_1CHS_8BITS.tif")
-    mgmtmaskRast <- paste0(rasterPath, areaID, "_", tileX, "_mgmtmask.tif")
-  }
-}
+# if(exists("tileSettings")){
+#   if(tileSettings) {
+#     source(mySettings)
+#     
+#     # Indicate raster files
+#     baRast <-  paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_BA_10M_1CHS_8BITS.tif")
+#     blPerRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_BLP_10M_1CHS_8BITS.tif")
+#     dbhRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_DIA_10M_1CHS_8BITS.tif")
+#     vRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_GSV_10M_1CHS_16BITS.tif")
+#     hRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_HGT_10M_1CHS_16BITS.tif")
+#     pinePerRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_P_pine_10M_1CHS_8BITS.tif")
+#     sprucePerRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_P_spruce_10M_1CHS_8BITS.tif")
+#     siteTypeRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_SITE_10M_1CHS_8BITS.tif")
+#     siteTypeRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_SITE_10M_1CHS_8BITS.tif")
+#     vRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_GSV_10M_1CHS_16BITS.tif")
+#     baRast2 <-  paste0(rasterPath,areaID,"_",tileX,"-",year2,"_BA_10M_1CHS_8BITS.tif")
+#     dbhRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_DIA_10M_1CHS_8BITS.tif")
+#     hRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_HGT_10M_1CHS_16BITS.tif")
+#     pinePerRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_P_pine_10M_1CHS_8BITS.tif")
+#     sprucePerRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_P_spruce_10M_1CHS_8BITS.tif")
+#     blPerRast2 <- paste0(rasterPath,areaID,"_",tileX,"-",year2,"_BLP_10M_1CHS_8BITS.tif")
+#     mgmtmaskRast <- paste0(rasterPath, areaID, "_", tileX, "_mgmtmask.tif")
+#   }
+# }
 
 
 nYears <-  yearEnd - startingYear ## number of simulation years

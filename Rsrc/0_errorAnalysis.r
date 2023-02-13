@@ -1,7 +1,10 @@
 library(devtools)
+##path data
+dataPath <- "C:/Users/minunno/Documents/research/ForestCarbonMonitoring/FCM_CNN/data/"
+
 # Run settings (if modifiedSettings is not set to TRUE in batch job script, default settings from Github will be used)
 source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc/settings.r")
-
+  
 if(file.exists("localSettings.r")) {source("localSettings.r")} # use settings in local directory if one exists
 
 
@@ -11,16 +14,17 @@ if(!dir.exists(file.path(generalPath, mkfldr))) {
   dir.create(file.path(generalPath, mkfldr), recursive = TRUE)
 }
 
-
-if(CSCrun){
-  load("/scratch/project_2000994/PREBASruns/assessCarbon/data/traningSites.rdata") # in CSC
-}else{
-  load("data/traningSites.rdata")
-}
-
-data2016$year <- 2016
-data2019$year <- 2019
-dataAll <- rbind(data2016,data2019)
+#### readata
+# if(CSCrun){
+#   load("/scratch/project_2000994/PREBASruns/assessCarbon/data/traningSites.rdata") # in CSC
+# }else{
+#   load("data/traningSites.rdata")
+# }
+data2015 <- data.table(read_excel(paste0(dataPath,"fieldData2015.xlsx")))
+data2015$year=2015
+# data2016$year <- 2016
+# data2019$year <- 2019
+# dataAll <- rbind(data2016,data2019)
 
 ###function to calculate residuals and MVN distribution parameters
 calError <- function(dataX){
@@ -46,22 +50,22 @@ calError <- function(dataX){
               corMatSTda=corMatSTda))
 }
 errData <- list()
-errData$all <- calError(dataAll)
-errData$y2016$all <- calError(data2016)
-errData$y2019$all <- calError(data2019)
-errData$y2016$t35VLJ <- calError(data2016[S2Tile == "35VLJ"])
-errData$y2019$t35VLJ <- calError(data2019[S2Tile == "35VLJ"])
-errData$y2016$t35VNL <- calError(data2016[S2Tile == "35VNL"])
-errData$y2019$t35VNL <- calError(data2019[S2Tile == "35VNL"])
-errData$y2016$t34VEQ <- calError(data2016[S2Tile == "34VEQ"])
-errData$y2019$t34VEQ <- calError(data2019[S2Tile == "34VEQ"])
-errData$y2016$t35WMN <- calError(data2016[S2Tile == "35WMN"])
-errData$y2019$t35WMN <- calError(data2019[S2Tile == "35VLJ"])
-# 
-errData$t35VLJ <- calError(dataAll[S2Tile == "35VLJ"])
-errData$t35VNL <- calError(dataAll[S2Tile == "35VNL"])
-errData$t34VEQ <- calError(dataAll[S2Tile == "34VEQ"])
-errData$t35WMN <- calError(dataAll[S2Tile == "35WMN"])
+# errData$all <- calError(dataAll)
+errData$y2015$all <- calError(data2015)
+# errData$y2019$all <- calError(data2019)
+# errData$y2016$t35VLJ <- calError(data2016[S2Tile == "35VLJ"])
+# errData$y2019$t35VLJ <- calError(data2019[S2Tile == "35VLJ"])
+# errData$y2016$t35VNL <- calError(data2016[S2Tile == "35VNL"])
+# errData$y2019$t35VNL <- calError(data2019[S2Tile == "35VNL"])
+# errData$y2016$t34VEQ <- calError(data2016[S2Tile == "34VEQ"])
+# errData$y2019$t34VEQ <- calError(data2019[S2Tile == "34VEQ"])
+# errData$y2016$t35WMN <- calError(data2016[S2Tile == "35WMN"])
+# errData$y2019$t35WMN <- calError(data2019[S2Tile == "35VLJ"])
+# # 
+# errData$t35VLJ <- calError(dataAll[S2Tile == "35VLJ"])
+# errData$t35VNL <- calError(dataAll[S2Tile == "35VNL"])
+# errData$t34VEQ <- calError(dataAll[S2Tile == "34VEQ"])
+# errData$t35WMN <- calError(dataAll[S2Tile == "35WMN"])
 
 if(CSCrun){
   save(errData,file="/scratch/project_2000994/PREBASruns/assessCarbon/data/inputUncer.rdata") # in CSC

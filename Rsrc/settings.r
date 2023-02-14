@@ -4,6 +4,7 @@ vPREBAS <- "master"   #### choose PREBAS version to run the model  "master"
 
 #####Settings####
 testRun = T ####set to TRUE to test the code on a small raster proportion
+if(!exists("extNew")) extNew <- c(550000,550500,5200000,5200500)
 if(!exists("CSCrun")){
   CSCrun = F ### set to TRUE if you are running on CSC
 }

@@ -2,6 +2,7 @@
 # Run settings 
 library(devtools)
 source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc/settings.r")
+setwd(generalPath)
 if(file.exists("localSettings.r")) {source("localSettings.r")} # use settings file from local directory if one exists
 
 # source_url("https://raw.githubusercontent.com/ForModLabUHel/satRuns/master/Rsrc/rmvweisd.r")
@@ -12,8 +13,6 @@ if(file.exists("localSettings.r")) {source("localSettings.r")} # use settings fi
 # }
 
 # Create folders for outputs.
-setwd(generalPath)
-  
 if (splitRun) {
   # If output is set to be split to smaller parts (splitRun = TRUE), create separate
   # folder for the split data tables.
@@ -31,7 +30,7 @@ if(!dir.exists(file.path(generalPath, mkfldr))) {
 
 
 ###extract CurrClim IDs
-rastX <- raster(baRast)
+rastX <- raster(baRast2015)
 if(testRun){
   extNew <- extent(rastX)
   extNew[2]   <- (extent(rastX)[1] + (extent(rastX)[2] - extent(rastX)[1])*fracTest)
@@ -46,22 +45,14 @@ rm(rastX)
 gc()
 
 
-fileNames <- c(baRast,
-               blPerRast,
-               dbhRast,
-               vRast,
-               hRast,
-               pinePerRast,
-               sprucePerRast,
-               siteTypeRast,
-               siteTypeRast2,
-               vRast2,
-               baRast2,
-               dbhRast2,
-               hRast2,
-               pinePerRast2,
-               sprucePerRast2,
-               blPerRast2,
+fileNames <- c(baRast2015,baRast2018,baRast2021,
+               blPerRast2015,blPerRast2018,blPerRast2021,
+               dbhRast2015,dbhRast2018,dbhRast2021,
+               vRast2015,vRast2018,vRast2021,
+               hRast2015,hRast2018,hRast2021,
+               conifPerRast2015,conifPerRast2018,conifPerRast2021,
+               # sprucePerRast,
+               siteTypeRast2015,siteTypeRast2018,siteTypeRast2021,
                if (mgmtmask==T) mgmtmaskRast)
 
 
@@ -82,47 +73,62 @@ for(i in 1:length(fileNames)){
 data.all$climID <- extract(climID,data.all[,.(x,y)])
 # dataX <- data.table(rasterToPoints(climIDs))
 # data.all <- merge(data.all,dataX)
-setnames(data.all,c("x","y","ba","blp","dbh","v","h","pineP","spruceP",
-                    "siteType1","siteType2","v2","ba2","dbh2","h2",
-                    "pineP2","spruceP2","blp2", if (mgmtmask==T) "mgmtmask","climID"))
+years <- c(2015,2018,2021)
+setnames(data.all,c("x","y",paste0("ba",years),paste0("bl",years),
+                    paste0("dbh",years),paste0("v",years),paste0("h",years),
+                    paste0("conif",years),paste0("siteType",years),
+                    if (mgmtmask==T) "mgmtmask","climID"))
 
 ##filter data 
-if (mgmtmask==T) data.all <- data.all[mgmtmask == 0]
-data.all <- data.all[!ba %in% baNA]
-data.all <- data.all[!ba2 %in% baNA]
-data.all <- data.all[!blp %in% blPerNA]
-data.all <- data.all[!blp2 %in% blPerNA]
-data.all <- data.all[!dbh %in% dbhNA]
-data.all <- data.all[!dbh2 %in% dbhNA]
-data.all <- data.all[!v %in% vNA]
-data.all <- data.all[!v2 %in% vNA]
-data.all <- data.all[!h %in% hNA]
-data.all <- data.all[!h2 %in% hNA]
-data.all <- data.all[!pineP %in% pinePerNA]
-data.all <- data.all[!spruceP %in% sprucePerNA]
-data.all <- data.all[!pineP2 %in% pinePerNA]
-data.all <- data.all[!spruceP2 %in% sprucePerNA]
-data.all <- data.all[!siteType1 %in% siteTypeNA]
-data.all <- data.all[!siteType2 %in% siteTypeNA]
+if(mgmtmask==T) data.all <- data.all[mgmtmask == 0]
+data.all <- data.all[!ba2015 %in% baNA]
+data.all <- data.all[!ba2018 %in% baNA]
+data.all <- data.all[!ba2021 %in% baNA]
+data.all <- data.all[!bl2015 %in% blPerNA]
+data.all <- data.all[!bl2018 %in% blPerNA]
+data.all <- data.all[!bl2021 %in% blPerNA]
+data.all <- data.all[!dbh2015 %in% dbhNA]
+data.all <- data.all[!dbh2018 %in% dbhNA]
+data.all <- data.all[!dbh2021 %in% dbhNA]
+data.all <- data.all[!v2015 %in% vNA]
+data.all <- data.all[!v2018 %in% vNA]
+data.all <- data.all[!v2021 %in% vNA]
+data.all <- data.all[!h2015 %in% hNA]
+data.all <- data.all[!h2018 %in% hNA]
+data.all <- data.all[!h2021 %in% hNA]
+data.all <- data.all[!conif2015 %in% pinePerNA]
+data.all <- data.all[!conif2018 %in% pinePerNA]
+data.all <- data.all[!conif2021 %in% pinePerNA]
+# data.all <- data.all[!spruceP %in% sprucePerNA]
+data.all <- data.all[!siteType2015 %in% siteTypeNA]
+data.all <- data.all[!siteType2018 %in% siteTypeNA]
+data.all <- data.all[!siteType2021 %in% siteTypeNA]
 
 ####convert data to prebas units
-data.all <- data.all[, ba := ba * baConv]
-data.all <- data.all[, ba2 := ba2 * baConv]
-data.all <- data.all[, blp := blp * blPerConv]
-data.all <- data.all[, dbh := dbh * dbhConv]
-data.all <- data.all[, dbh2 := dbh2 * dbhConv]
-data.all <- data.all[, v := v * vConv]
-data.all <- data.all[, v2 := v2 * vConv]
-data.all <- data.all[, h := h * hConv]
-data.all <- data.all[, h2 := h2 * hConv]
-data.all <- data.all[, pineP := pineP * pinePerConv]
-data.all <- data.all[, spruceP := spruceP * sprucePerConv]
-data.all <- data.all[, siteType1 := siteType1 * siteTypeConv]
-data.all <- data.all[, siteType2 := siteType2 * siteTypeConv]
-data.all <- data.all[, pineP2 := pineP2 * pinePerConv]
-data.all <- data.all[, spruceP2 := spruceP2 * sprucePerConv]
-data.all <- data.all[, blp2 := blp2 * blPerConv]
+data.all <- data.all[, ba2015 := ba2015 * baConv]
+data.all <- data.all[, ba2018 := ba2018 * baConv]
+data.all <- data.all[, ba2021 := ba2021 * baConv]
+data.all <- data.all[, bl2015 := bl2015 * blPerConv]
+data.all <- data.all[, bl2018 := bl2018 * blPerConv]
+data.all <- data.all[, bl2021 := bl2021 * blPerConv]
+data.all <- data.all[, dbh2015 := dbh2015 * dbhConv]
+data.all <- data.all[, dbh2018 := dbh2018 * dbhConv]
+data.all <- data.all[, dbh2021 := dbh2021 * dbhConv]
+data.all <- data.all[, v2015 := v2015 * vConv]
+data.all <- data.all[, v2018 := v2018 * vConv]
+data.all <- data.all[, v2021 := v2021 * vConv]
+data.all <- data.all[, h2015 := h2015 * hConv]
+data.all <- data.all[, h2018 := h2018 * hConv]
+data.all <- data.all[, h2021 := h2021 * hConv]
+data.all <- data.all[, conif2015 := conif2015 * pinePerConv]
+data.all <- data.all[, conif2018 := conif2018 * pinePerConv]
+data.all <- data.all[, conif2021 := conif2021 * pinePerConv]
+data.all <- data.all[, siteType2015 := siteType2015 * siteTypeConv]
+data.all <- data.all[, siteType2018 := siteType2018 * siteTypeConv]
+data.all <- data.all[, siteType2021 := siteType2021 * siteTypeConv]
 
+
+###tocheck!
 if(siteTypeX==year2){
   data.all[,siteType:=siteType2]  
 }else if(siteTypeX==startingYear){
@@ -130,22 +136,31 @@ if(siteTypeX==year2){
 }else{
   data.all[,siteType:=siteTypeX]  
 }
-data.all[siteType>5,siteType:=5]
-data.all[siteType1>5,siteType1:=5]
-data.all[siteType2>5,siteType2:=5]
+data.all[siteType2015>5,siteType2015:=5]
+data.all[siteType2018>5,siteType2018:=5]
+data.all[siteType2021>5,siteType2021:=5]
 
 
 #####I'm excluding from the runs the areas that have been clearcutted and have ba=0 
 # data.all[h==0. & dbh==0 & ba==0,clCut:=1]
-data.all[,clCut:=0]
-data.all[ba==0,clCut:=1]
+data.all[,clCut2015:=0];data.all[,clCut2018:=0];data.all[,clCut2021:=0]
+data.all[ba2015==0,clCut2015:=1]
+data.all[ba2018==0,clCut2018:=1]
+data.all[ba2021==0,clCut2021:=1]
 
 ###calculate tree density
-data.all[clCut==0,N:=ba/(pi*(dbh/200)^2)]
+data.all[clCut2015==0,N2015:=ba2015/(pi*(dbh2015/200)^2)]
+data.all[clCut2018==0,N2018:=ba2018/(pi*(dbh2018/200)^2)]
+data.all[clCut2021==0,N2021:=ba2021/(pi*(dbh2021/200)^2)]
 
+!!!!
 ####check where H is below minimum initial height and replace
-smallH <- intersect(which(data.all$h < initH), which(data.all$clCut==0))
-data.all[smallH, h:=initH]
+smallH <- intersect(which(data.all$h2015 < initH), which(data.all$clCut2015==0))
+data.all[smallH, h2015:=initH]
+smallH <- intersect(which(data.all$h2018 < initH), which(data.all$clCut2018==0))
+data.all[smallH, h2018:=initH]
+smallH <- intersect(which(data.all$h2021 < initH), which(data.all$clCut2021==0))
+data.all[smallH, h2021:=initH]
 
 ###check where density is too high and replace stand variables with initial conditions
 tooDens <- intersect(which(data.all$N> maxDens), which(data.all$clCut==0))

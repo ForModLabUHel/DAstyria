@@ -3,7 +3,7 @@ vPREBAS <- "master"   #### choose PREBAS version to run the model  "master"
 
 
 #####Settings####
-testRun = T ####set to TRUE to test the code on a small raster proportion
+if(!exists("testRun")) testRun = T ####set to TRUE to test the code on a small raster proportion
 if(!exists("extNew")) extNew <- c(550000,550500,5200000,5200500)
 if(!exists("CSCrun")){
   CSCrun = F ### set to TRUE if you are running on CSC
@@ -74,8 +74,8 @@ year <- 2015
 baRast2015 <-  paste0(rasterPath,year,"/FCM_STY_2015_G_10M_8BITS-Styria.tif")
 blPerRast2015 <- paste0(rasterPath,year,"/FCM_STY_2015_BLP_10M_8BITS-Styria.tif")
 dbhRast2015 <- paste0(rasterPath,year,"/FCM_STY_2015_D_10M_8BITS-Styria.tif")
-vRast2015 <- paste0(rasterPath,year,"/FCM_STY_2015_V_10M_8BITS-Styria.tif")
-hRast2015 <- paste0(rasterPath,year,"/FCM_STY_2015_H_10M_8BITS-Styria.tif")
+vRast2015 <- paste0(rasterPath,year,"/FCM_STY_2015_V_10M_16BITS-Styria.tif")
+hRast2015 <- paste0(rasterPath,year,"/FCM_STY_2015_H_10M_16BITS-Styria.tif")
 conifPerRast2015 <- paste0(rasterPath,year,"/FCM_STY_2015_CP_10M_8BITS-Styria.tif")
 siteTypeRast2015 <- paste0(rasterPath,year,"/FCM_STY_2015_SITE_10M_8BITS-Styria.tif")
 # pinePerRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_P_pine_10M_1CHS_8BITS.tif")
@@ -84,8 +84,8 @@ year <- 2018
 baRast2018 <-  paste0(rasterPath,year,"/FCM_STY_2018_G_10M_8BITS-Styria.tif")
 blPerRast2018 <- paste0(rasterPath,year,"/FCM_STY_2018_BLP_10M_8BITS-Styria.tif")
 dbhRast2018 <- paste0(rasterPath,year,"/FCM_STY_2018_D_10M_8BITS-Styria.tif")
-vRast2018 <- paste0(rasterPath,year,"/FCM_STY_2018_V_10M_8BITS-Styria.tif")
-hRast2018 <- paste0(rasterPath,year,"/FCM_STY_2018_H_10M_8BITS-Styria.tif")
+vRast2018 <- paste0(rasterPath,year,"/FCM_STY_2018_V_10M_16BITS-Styria.tif")
+hRast2018 <- paste0(rasterPath,year,"/FCM_STY_2018_H_10M_16BITS-Styria.tif")
 conifPerRast2018 <- paste0(rasterPath,year,"/FCM_STY_2018_CP_10M_8BITS-Styria.tif")
 siteTypeRast2018 <- paste0(rasterPath,year,"/FCM_STY_2018_SITE_10M_8BITS-Styria.tif")
 # pinePerRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_P_pine_10M_1CHS_8BITS.tif")
@@ -94,8 +94,8 @@ year <- 2021
 baRast2021 <-  paste0(rasterPath,year,"/FCM_STY_2021_G_10M_8BITS-Styria.tif")
 blPerRast2021 <- paste0(rasterPath,year,"/FCM_STY_2021_BLP_10M_8BITS-Styria.tif")
 dbhRast2021 <- paste0(rasterPath,year,"/FCM_STY_2021_D_10M_8BITS-Styria.tif")
-vRast2021 <- paste0(rasterPath,year,"/FCM_STY_2021_V_10M_8BITS-Styria.tif")
-hRast2021 <- paste0(rasterPath,year,"/FCM_STY_2021_H_10M_8BITS-Styria.tif")
+vRast2021 <- paste0(rasterPath,year,"/FCM_STY_2021_V_10M_16BITS-Styria.tif")
+hRast2021 <- paste0(rasterPath,year,"/FCM_STY_2021_H_10M_16BITS-Styria.tif")
 conifPerRast2021 <- paste0(rasterPath,year,"/FCM_STY_2021_CP_10M_8BITS-Styria.tif")
 siteTypeRast2021 <- paste0(rasterPath,year,"/FCM_STY_2021_SITE_10M_8BITS-Styria.tif")
 # pinePerRast <- paste0(rasterPath,areaID,"_",tileX,"-",startingYear,"_P_pine_10M_1CHS_8BITS.tif")

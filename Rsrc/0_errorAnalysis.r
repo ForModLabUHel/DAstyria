@@ -73,7 +73,7 @@ if(CSCrun){
   save(errData,file="data/inputUncer.rdata")
 }
 
-print("this following part of the code needs to be updated and was commented out ")
+print("the following part of the code needs to be updated and was commented out ")
 
 # #### Probit regression between sitetype.ref and sitetype.est 
 # summary(dataAll)

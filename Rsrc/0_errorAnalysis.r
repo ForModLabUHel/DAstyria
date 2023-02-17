@@ -73,105 +73,105 @@ if(CSCrun){
   save(errData,file="data/inputUncer.rdata")
 }
 
+print("this following part of the code needs to be updated and was commented out ")
 
-
-#### Probit regression between sitetype.ref and sitetype.est 
-summary(dataAll)
-dataAll[Class.est>5,Class.est:=5]
-dataAll[Class.ref>5,Class.ref:=5]
-dataAll$alpha<-NA
-dataAll$alpha[dataAll$Class.est==1]<- 0.2833333 #mean(pCROB['alfar1',1:3])
-dataAll$alpha[dataAll$Class.est==2]<- 0.4066667 #mean(pCROB['alfar2',1:3])
-dataAll$alpha[dataAll$Class.est==3]<- 0.4966667 #mean(pCROB['alfar3',1:3])
-dataAll$alpha[dataAll$Class.est==4]<- 0.6233333 #mean(pCROB['alfar4',1:3])
-dataAll$alpha[dataAll$Class.est==5]<- 0.7866667 #mean(pCROB['alfar5',1:3])
-
-dataAll$Class.est.f<-factor(dataAll$Class.est,levels = 1:5)
-dataAll$Class.ref.f<-factor(dataAll$Class.ref,levels = 1:5)
-
-
-calProbit <- function(dataX, yearX="all", tileX="all"){
-  if(yearX=="all" & tileX=="all"){
-    dataX <- dataX[,.(Class.ref.f, Class.est,H.est,D.est,G.est,PINE.est, SPRUCE.est, BL.est)]
-  }else if(yearX=="all" & tileX!="all"){
-    dataX <- dataX[S2Tile==tileX,.(Class.ref.f, Class.est,H.est,D.est,G.est,PINE.est, SPRUCE.est, BL.est)]
-  }else if(yearX!="all" & tileX=="all"){
-    dataX <- dataX[year==yearX,.(Class.ref.f, Class.est,H.est,D.est,G.est,PINE.est, SPRUCE.est, BL.est)]
-  }else{
-    dataX <- dataX[year==yearX & S2Tile==tileX,.(Class.ref.f, Class.est,H.est,D.est,G.est,PINE.est, SPRUCE.est, BL.est)]
-  }
-  setnames(dataX,c("st.mea.f","st", "H", "D", "BAtot","BApPer","BAspPer","BAbPer"))
-  full.probit<-polr(st.mea.f ~ st+H+D+BAtot+BApPer+BAspPer+BAbPer,data=dataX ,method='probit')
-  step.probit <- stepAIC(full.probit, direction = "both",
-                         trace = FALSE)
-  return(step.probit)
-}
-
-step.probit <- list()
-step.probit$all <- calProbit(dataAll)
-step.probit$y2016$all <- calProbit(dataAll,yearX=2016)
-step.probit$y2019$all <- calProbit(dataAll,yearX=2019)
-step.probit$y2016$t35VLJ <- calProbit(dataAll,yearX=2016,tileX="35VLJ")
-step.probit$y2019$t35VLJ <- calProbit(dataAll,yearX=2019,tileX="35VLJ")
-# step.probit$y2016$t35VNL <- calProbit(dataAll,yearX=2016,tileX="35VNL")
-step.probit$y2019$t35VNL <- calProbit(dataAll,yearX=2019,tileX="35VNL")
-step.probit$y2016$t34VEQ <- calProbit(dataAll,yearX=2016,tileX="34VEQ")
-step.probit$y2019$t34VEQ <- calProbit(dataAll,yearX=2019,tileX="34VEQ")
-step.probit$y2019$t35WMN <- calProbit(dataAll,yearX="all",tileX="35WMN")
-
-# save(step.probit,file = paste0(generalPath,'surErrMods/stProbit.rdata'))
-if(CSCrun){
-  save(step.probit,file="/scratch/project_2000994/PREBASruns/assessCarbon/data/step.probit.rdata") # in CSC
-}else{
-  save(step.probit,file="data/step.probit.rdata")
-}
-
-#### logistic function to predict the pure forests
-
-dataAll$max.pro.ref<-apply(dataAll[, c('PINE.mea','SPRUCE.mea','BL.mea')], 1, max)
-dataAll$max.pro.est<-apply(dataAll[, c('PINE.est','SPRUCE.est','BL.est')], 1, max)
-dataAll$pure.ref<-F
-dataAll$pure.ref[dataAll$max.pro.ref>=100]<-T
-# dataAll$pure.ref<-as.factor(dataAll$pure.ref)
-
-logistic.model <- list()
-
-logistic.model$all <- glm(formula = pure.ref ~ max.pro.est, family = binomial(link = "logit"), 
-                    data = dataAll)
-
-yearX=2016; tileX = "35VLJ"
-dataX <- dataAll[year==yearX & S2Tile == tileX]
-logistic.model[[paste0("y",yearX)]][[paste0("t",tileX)]] <- glm(formula = pure.ref ~ max.pro.est, family = binomial(link = "logit"), 
-                                   data = dataX)
-yearX=2019; tileX = "35VLJ"
-dataX <- dataAll[year==yearX & S2Tile == tileX]
-logistic.model[[paste0("y",yearX)]][[paste0("t",tileX)]] <- glm(formula = pure.ref ~ max.pro.est, family = binomial(link = "logit"), 
-                                                                data = dataX)
-yearX=2019; tileX = "35VNL"
-dataX <- dataAll[year==yearX & S2Tile == tileX]
-logistic.model[[paste0("y",yearX)]][[paste0("t",tileX)]] <- glm(formula = pure.ref ~ max.pro.est, family = binomial(link = "logit"), 
-                                                                data = dataX)
-yearX=2016; tileX = "34VEQ"
-dataX <- dataAll[year==yearX & S2Tile == tileX]
-logistic.model[[paste0("y",yearX)]][[paste0("t",tileX)]] <- glm(formula = pure.ref ~ max.pro.est, family = binomial(link = "logit"), 
-                                                                data = dataX)
-yearX=2019; tileX = "34VEQ"
-dataX <- dataAll[year==yearX & S2Tile == tileX]
-logistic.model[[paste0("y",yearX)]][[paste0("t",tileX)]] <- glm(formula = pure.ref ~ max.pro.est, family = binomial(link = "logit"), 
-                                                                data = dataX)
-yearX=2016; tileX = "35WMN"
-dataX <- dataAll[year==yearX & S2Tile == tileX]
-logistic.model[[paste0("y",yearX)]][[paste0("t",tileX)]] <- glm(formula = pure.ref ~ max.pro.est, family = binomial(link = "logit"), 
-                                                                data = dataX)
-yearX=2019; tileX = "35WMN"
-dataX <- dataAll[year==yearX & S2Tile == tileX]
-logistic.model[[paste0("y",yearX)]][[paste0("t",tileX)]] <- glm(formula = pure.ref ~ max.pro.est, family = binomial(link = "logit"), 
-                                                                data = dataX)
-# plot(dataAll$max.pro.est,predict(logistic.model,type="response"))
-logisticPureF <- logistic.model
-if(CSCrun){
-  save(logisticPureF,file="/scratch/project_2000994/PREBASruns/assessCarbon/data/logisticPureF.rdata") # in CSC
-}else{
-  save(logisticPureF,file="data/logisticPureF.rdata")
-}
-
+# #### Probit regression between sitetype.ref and sitetype.est 
+# summary(dataAll)
+# dataAll[Class.est>5,Class.est:=5]
+# dataAll[Class.ref>5,Class.ref:=5]
+# dataAll$alpha<-NA
+# dataAll$alpha[dataAll$Class.est==1]<- 0.2833333 #mean(pCROB['alfar1',1:3])
+# dataAll$alpha[dataAll$Class.est==2]<- 0.4066667 #mean(pCROB['alfar2',1:3])
+# dataAll$alpha[dataAll$Class.est==3]<- 0.4966667 #mean(pCROB['alfar3',1:3])
+# dataAll$alpha[dataAll$Class.est==4]<- 0.6233333 #mean(pCROB['alfar4',1:3])
+# dataAll$alpha[dataAll$Class.est==5]<- 0.7866667 #mean(pCROB['alfar5',1:3])
+# 
+# dataAll$Class.est.f<-factor(dataAll$Class.est,levels = 1:5)
+# dataAll$Class.ref.f<-factor(dataAll$Class.ref,levels = 1:5)
+# 
+# 
+# calProbit <- function(dataX, yearX="all", tileX="all"){
+#   if(yearX=="all" & tileX=="all"){
+#     dataX <- dataX[,.(Class.ref.f, Class.est,H.est,D.est,G.est,PINE.est, SPRUCE.est, BL.est)]
+#   }else if(yearX=="all" & tileX!="all"){
+#     dataX <- dataX[S2Tile==tileX,.(Class.ref.f, Class.est,H.est,D.est,G.est,PINE.est, SPRUCE.est, BL.est)]
+#   }else if(yearX!="all" & tileX=="all"){
+#     dataX <- dataX[year==yearX,.(Class.ref.f, Class.est,H.est,D.est,G.est,PINE.est, SPRUCE.est, BL.est)]
+#   }else{
+#     dataX <- dataX[year==yearX & S2Tile==tileX,.(Class.ref.f, Class.est,H.est,D.est,G.est,PINE.est, SPRUCE.est, BL.est)]
+#   }
+#   setnames(dataX,c("st.mea.f","st", "H", "D", "BAtot","BApPer","BAspPer","BAbPer"))
+#   full.probit<-polr(st.mea.f ~ st+H+D+BAtot+BApPer+BAspPer+BAbPer,data=dataX ,method='probit')
+#   step.probit <- stepAIC(full.probit, direction = "both",
+#                          trace = FALSE)
+#   return(step.probit)
+# }
+# 
+# step.probit <- list()
+# step.probit$all <- calProbit(dataAll)
+# step.probit$y2016$all <- calProbit(dataAll,yearX=2016)
+# step.probit$y2019$all <- calProbit(dataAll,yearX=2019)
+# step.probit$y2016$t35VLJ <- calProbit(dataAll,yearX=2016,tileX="35VLJ")
+# step.probit$y2019$t35VLJ <- calProbit(dataAll,yearX=2019,tileX="35VLJ")
+# # step.probit$y2016$t35VNL <- calProbit(dataAll,yearX=2016,tileX="35VNL")
+# step.probit$y2019$t35VNL <- calProbit(dataAll,yearX=2019,tileX="35VNL")
+# step.probit$y2016$t34VEQ <- calProbit(dataAll,yearX=2016,tileX="34VEQ")
+# step.probit$y2019$t34VEQ <- calProbit(dataAll,yearX=2019,tileX="34VEQ")
+# step.probit$y2019$t35WMN <- calProbit(dataAll,yearX="all",tileX="35WMN")
+# 
+# # save(step.probit,file = paste0(generalPath,'surErrMods/stProbit.rdata'))
+# if(CSCrun){
+#   save(step.probit,file="/scratch/project_2000994/PREBASruns/assessCarbon/data/step.probit.rdata") # in CSC
+# }else{
+#   save(step.probit,file="data/step.probit.rdata")
+# }
+# 
+# #### logistic function to predict the pure forests
+# 
+# dataAll$max.pro.ref<-apply(dataAll[, c('PINE.mea','SPRUCE.mea','BL.mea')], 1, max)
+# dataAll$max.pro.est<-apply(dataAll[, c('PINE.est','SPRUCE.est','BL.est')], 1, max)
+# dataAll$pure.ref<-F
+# dataAll$pure.ref[dataAll$max.pro.ref>=100]<-T
+# # dataAll$pure.ref<-as.factor(dataAll$pure.ref)
+# 
+# logistic.model <- list()
+# 
+# logistic.model$all <- glm(formula = pure.ref ~ max.pro.est, family = binomial(link = "logit"), 
+#                     data = dataAll)
+# 
+# yearX=2016; tileX = "35VLJ"
+# dataX <- dataAll[year==yearX & S2Tile == tileX]
+# logistic.model[[paste0("y",yearX)]][[paste0("t",tileX)]] <- glm(formula = pure.ref ~ max.pro.est, family = binomial(link = "logit"), 
+#                                    data = dataX)
+# yearX=2019; tileX = "35VLJ"
+# dataX <- dataAll[year==yearX & S2Tile == tileX]
+# logistic.model[[paste0("y",yearX)]][[paste0("t",tileX)]] <- glm(formula = pure.ref ~ max.pro.est, family = binomial(link = "logit"), 
+#                                                                 data = dataX)
+# yearX=2019; tileX = "35VNL"
+# dataX <- dataAll[year==yearX & S2Tile == tileX]
+# logistic.model[[paste0("y",yearX)]][[paste0("t",tileX)]] <- glm(formula = pure.ref ~ max.pro.est, family = binomial(link = "logit"), 
+#                                                                 data = dataX)
+# yearX=2016; tileX = "34VEQ"
+# dataX <- dataAll[year==yearX & S2Tile == tileX]
+# logistic.model[[paste0("y",yearX)]][[paste0("t",tileX)]] <- glm(formula = pure.ref ~ max.pro.est, family = binomial(link = "logit"), 
+#                                                                 data = dataX)
+# yearX=2019; tileX = "34VEQ"
+# dataX <- dataAll[year==yearX & S2Tile == tileX]
+# logistic.model[[paste0("y",yearX)]][[paste0("t",tileX)]] <- glm(formula = pure.ref ~ max.pro.est, family = binomial(link = "logit"), 
+#                                                                 data = dataX)
+# yearX=2016; tileX = "35WMN"
+# dataX <- dataAll[year==yearX & S2Tile == tileX]
+# logistic.model[[paste0("y",yearX)]][[paste0("t",tileX)]] <- glm(formula = pure.ref ~ max.pro.est, family = binomial(link = "logit"), 
+#                                                                 data = dataX)
+# yearX=2019; tileX = "35WMN"
+# dataX <- dataAll[year==yearX & S2Tile == tileX]
+# logistic.model[[paste0("y",yearX)]][[paste0("t",tileX)]] <- glm(formula = pure.ref ~ max.pro.est, family = binomial(link = "logit"), 
+#                                                                 data = dataX)
+# # plot(dataAll$max.pro.est,predict(logistic.model,type="response"))
+# logisticPureF <- logistic.model
+# if(CSCrun){
+#   save(logisticPureF,file="/scratch/project_2000994/PREBASruns/assessCarbon/data/logisticPureF.rdata") # in CSC
+# }else{
+#   save(logisticPureF,file="data/logisticPureF.rdata")
+# }
+# 

@@ -30,19 +30,20 @@ if(!dir.exists(file.path(generalPath, mkfldr))) {
 
 
 ###extract CurrClim IDs
-rastX <- raster(baRast2015)
+rastRef <- raster(baRast2015)
 if(testRun){
-  extNew <- extent(rastX)
-  extNew[2]   <- (extent(rastX)[1] + (extent(rastX)[2] - extent(rastX)[1])*fracTest)
-  extNew[4]   <- (extent(rastX)[3] + (extent(rastX)[4] - extent(rastX)[3])*fracTest)
-  rastX <- crop(rastX,extNew)
+  extNew <- extent(rastRef)
+  extNew[1:2]   <- (extent(rastRef)[1] + (extent(rastRef)[2]))/2 + c(-10000,10000)
+  extNew[3:4]   <- (extent(rastRef)[3] + (extent(rastRef)[4]))/2 + c(-10000,10000)
+  rastRef <- crop(rastRef,extNew)
   maxSitesRun <- maxSitesRunTest
 }
 
-climID <- raster(climIDpath)
 
-rm(rastX)
-gc()
+climID <- raster(climIDpath)
+climID <- crop(climID,rastRef)
+climID <- raster(vals=values(climID),ext=extent(rastRef),crs=crs(rastRef),
+                        nrows=dim(rastRef)[1],ncols=dim(rastRef)[2])
 
 
 fileNames <- c(baRast2015,baRast2018,baRast2021,
@@ -55,15 +56,27 @@ fileNames <- c(baRast2015,baRast2018,baRast2021,
                siteTypeRast2015,siteTypeRast2018,siteTypeRast2021,
                if (mgmtmask==T) mgmtmaskRast)
 
+years <- c(2015,2018,2021)
+varNames <- c(paste0("ba",years),paste0("bl",years),
+              paste0("dbh",years),paste0("v",years),paste0("h",years),
+              paste0("conif",years),paste0("siteType",years),
+              if (mgmtmask==T) "mgmtmask","climID")
 
 for(i in 1:length(fileNames)){
   rastX <- raster(fileNames[i])
-  if(testRun) rastX <- crop(rastX,extNew)    ####if it is a test run rasters are cropped to a smaller area
+  if(testRun) rastX <- crop(rastX,rastRef)    ####if it is a test run rasters are cropped to a smaller area
+  rastX <- raster(vals=values(rastX),ext=extent(rastRef),crs=crs(rastRef),
+                   nrows=dim(rastRef)[1],ncols=dim(rastRef)[2])
+
   dataX <- data.table(rasterToPoints(rastX))
+  setnames(dataX,c("x","y",varNames[i]))
+  setkey(dataX,x,y)
   if(i==1){
     data.all <- dataX 
+    setkey(data.all,x,y)
   }else{
-    data.all <- merge(data.all,dataX)
+    data.all <- merge(data.all,dataX,all=T)
+    setkey(data.all,x,y)
   }
   print(fileNames[i])
 }
@@ -73,12 +86,11 @@ for(i in 1:length(fileNames)){
 data.all$climID <- extract(climID,data.all[,.(x,y)])
 # dataX <- data.table(rasterToPoints(climIDs))
 # data.all <- merge(data.all,dataX)
-years <- c(2015,2018,2021)
-setnames(data.all,c("x","y",paste0("ba",years),paste0("bl",years),
-                    paste0("dbh",years),paste0("v",years),paste0("h",years),
-                    paste0("conif",years),paste0("siteType",years),
-                    if (mgmtmask==T) "mgmtmask","climID"))
-
+# setnames(data.all,c("x","y",paste0("ba",years),paste0("bl",years),
+#                     paste0("dbh",years),paste0("v",years),paste0("h",years),
+#                     paste0("conif",years),paste0("siteType",years),
+#                     if (mgmtmask==T) "mgmtmask","climID"))
+# 
 ##filter data 
 if(mgmtmask==T) data.all <- data.all[mgmtmask == 0]
 data.all <- data.all[!ba2015 %in% baNA]
@@ -103,6 +115,16 @@ data.all <- data.all[!conif2021 %in% pinePerNA]
 data.all <- data.all[!siteType2015 %in% siteTypeNA]
 data.all <- data.all[!siteType2018 %in% siteTypeNA]
 data.all <- data.all[!siteType2021 %in% siteTypeNA]
+
+##NAs are used when species proportion is 0
+#replace NAs with 0
+data.all$bl2015[which(is.na(data.all$bl2015))] <- 0
+data.all$bl2018[which(is.na(data.all$bl2018))] <- 0
+data.all$bl2021[which(is.na(data.all$bl2021))] <- 0
+data.all$conif2015[which(is.na(data.all$conif2015))] <- 0
+data.all$conif2018[which(is.na(data.all$conif2018))] <- 0
+data.all$conif2021[which(is.na(data.all$conif2021))] <- 0
+print(c("NAs",length(which(is.na(data.all)))))
 
 ####convert data to prebas units
 data.all <- data.all[, ba2015 := ba2015 * baConv]
@@ -153,7 +175,6 @@ data.all[clCut2015==0,N2015:=ba2015/(pi*(dbh2015/200)^2)]
 data.all[clCut2018==0,N2018:=ba2018/(pi*(dbh2018/200)^2)]
 data.all[clCut2021==0,N2021:=ba2021/(pi*(dbh2021/200)^2)]
 
-!!!!
 ####check where H is below minimum initial height and replace
 smallH <- intersect(which(data.all$h2015 < initH), which(data.all$clCut2015==0))
 data.all[smallH, h2015:=initH]
@@ -163,87 +184,109 @@ smallH <- intersect(which(data.all$h2021 < initH), which(data.all$clCut2021==0))
 data.all[smallH, h2021:=initH]
 
 ###check where density is too high and replace stand variables with initial conditions
-tooDens <- intersect(which(data.all$N> maxDens), which(data.all$clCut==0))
-data.all[tooDens,h:=initH]
-data.all[tooDens,ba:=initBA]
-data.all[tooDens,dbh:=initDBH]
-data.all[tooDens,N:=initN]
+tooDens <- intersect(which(data.all$N2015> maxDens), which(data.all$clCut2015==0))
+data.all[tooDens,h2015:=initH]
+data.all[tooDens,ba2015:=initBA]
+data.all[tooDens,dbh2015:=initDBH]
+data.all[tooDens,N2015:=initN]
+tooDens <- intersect(which(data.all$N2018> maxDens), which(data.all$clCut2018==0))
+data.all[tooDens,h2018:=initH]
+data.all[tooDens,ba2018:=initBA]
+data.all[tooDens,dbh2018:=initDBH]
+data.all[tooDens,N2018:=initN]
+tooDens <- intersect(which(data.all$N2021> maxDens), which(data.all$clCut2021==0))
+data.all[tooDens,h2021:=initH]
+data.all[tooDens,ba2021:=initBA]
+data.all[tooDens,dbh2021:=initDBH]
+data.all[tooDens,N2021:=initN]
 
 
-data.all[pineP == 0 & spruceP == 0 & blp ==0 & siteType ==1, blp:=1  ]
-data.all[pineP == 0 & spruceP == 0 & blp ==0 & siteType <= 3 & siteType > 1, spruceP:=1  ]
-data.all[pineP == 0 & spruceP == 0 & blp ==0 & siteType >= 4, pineP:=1  ]
+
+data.all[conif2015 == 0 & bl2015 == 0 & siteType2015 ==1, bl2015:=1]
+data.all[conif2018 == 0 & bl2018 == 0 & siteType2018 ==1, bl2018:=1]
+data.all[conif2021 == 0 & bl2021 == 0 & siteType2021 ==1, bl2021:=1]
+data.all[conif2015 == 0 & bl2015 ==0 & siteType2015 <= 3 & siteType2015 > 1, conif2015:=1]
+data.all[conif2018 == 0 & bl2018 ==0 & siteType2018 <= 3 & siteType2018 > 1, conif2018:=1]
+data.all[conif2021 == 0 & bl2021 ==0 & siteType2021 <= 3 & siteType2021 > 1, conif2021:=1]
+data.all[conif2015 == 0 & bl2015 ==0 & siteType2015 >= 4, conif2015:=1  ]
+data.all[conif2018 == 0 & bl2018 ==0 & siteType2018 >= 4, conif2018:=1  ]
+data.all[conif2021 == 0 & bl2021 ==0 & siteType2021 >= 4, conif2021:=1  ]
 
 ###!!!!!!!!!!!!########careful with this part##########!!!!!!!!#########
 
 ####calculate dV, dBA, dH, dDBH
 # data.all[,dV := v2-v]
-data.all[,dVy := (v2-v)/(year2 - startingYear)]
+data.all[,dV1 := (v2018-v2015)/(year2 - startingYear)]
+data.all[,dV2 := (v2021-v2018)/(yearEnd - year2)]
 # data.all[,dBA := ba2-ba]
-data.all[,dBAy := (ba2-ba)/(year2 - startingYear)]
+data.all[,dBA1 := (ba2018-ba2015)/(year2 - startingYear)]
+data.all[,dBA2 := (ba2021-ba2018)/(yearEnd - year2)]
 # data.all[,dH := h2-h]
-data.all[,dHy := (h2-h)/(year2 - startingYear)]
+data.all[,dH1 := (h2018-h2015)/(year2 - startingYear)]
+data.all[,dH2 := (h2021-h2018)/(yearEnd - year2)]
 # data.all[,dDBH := dbh2-dbh]
-data.all[,dDBHy := (dbh2-dbh)/(year2 - startingYear)]
+data.all[,dD1 := (dbh2018-dbh2015)/(year2 - startingYear)]
+data.all[,dD2 := (dbh2021-dbh2018)/(yearEnd - year2)]
 
+####not grupping
 ####group pixels by same values
-data.all[, segID := .GRP, by = .(ba, blp,dbh, h, pineP, spruceP, 
-                                 siteType1,siteType2, climID,dVy,v2,
-                                 dBAy,ba2,dHy,h2,dDBHy,dbh2,
-                                 pineP2, spruceP2,blp2)]
-
-####Count segID pix
-data.all[, npix:=.N, segID]
-
-# uniqueData <- data.table()
-####find unique initial conditions
-uniqueData <- unique(data.all[clCut==0,.(segID,npix,climID,ba,blp,dbh,h,pineP,spruceP,
-                                         siteType1,siteType2,dBAy,ba2,dVy,v2,
-                                         dHy,h2,dDBHy,dbh2,pineP2, spruceP2,blp2)])
-
-uniqueData[,uniqueKey:=1:nrow(uniqueData)]
-setkey(uniqueData, uniqueKey)
-# uniqueData[,N:=ba/(pi*(dbh/200)^2)]
-# range(uniqueData$N)
-
-uniqueData[,area:=npix*resX^2/10000]
-
-###assign ID to similar pixels
-XYsegID <- data.all[,.(x,y,segID)]
-
-###!!!!!!!!!!!!########end careful with this part##########!!!!!!!!#########
-
-# nSamples <- ceiling(dim(uniqueData)[1]/20000)
-# sampleID <- 1
+# data.all[, segID := .GRP, by = .(ba, blp,dbh, h, pineP, spruceP, 
+#                                  siteType1,siteType2, climID,dVy,v2,
+#                                  dBAy,ba2,dHy,h2,dDBHy,dbh2,
+#                                  pineP2, spruceP2,blp2)]
 # 
-# for(sampleID in sampleIDs){
-#   set.seed(1)
-#   samplesX <- split(uniqueData, sample(1:nSample, nrow(uniqueData), replace=T))
-#   sampleX <- ops[[sampleID]]
-#   sampleX[,area := N*resX^2/10000]
-#   # sampleX[,id:=climID]
+# ####Count segID pix
+# data.all[, npix:=.N, segID]
+# 
+# # uniqueData <- data.table()
+# ####find unique initial conditions
+# uniqueData <- unique(data.all[clCut==0,.(segID,npix,climID,ba,blp,dbh,h,pineP,spruceP,
+#                                          siteType1,siteType2,dBAy,ba2,dVy,v2,
+#                                          dHy,h2,dDBHy,dbh2,pineP2, spruceP2,blp2)])
+# 
+# uniqueData[,uniqueKey:=1:nrow(uniqueData)]
+# setkey(uniqueData, uniqueKey)
+# # uniqueData[,N:=ba/(pi*(dbh/200)^2)]
+# # range(uniqueData$N)
+# 
+# uniqueData[,area:=npix*resX^2/10000]
+# 
+# ###assign ID to similar pixels
+# XYsegID <- data.all[,.(x,y,segID)]
+# 
+# ###!!!!!!!!!!!!########end careful with this part##########!!!!!!!!#########
+# 
+# # nSamples <- ceiling(dim(uniqueData)[1]/20000)
+# # sampleID <- 1
+# # 
+# # for(sampleID in sampleIDs){
+# #   set.seed(1)
+# #   samplesX <- split(uniqueData, sample(1:nSample, nrow(uniqueData), replace=T))
+# #   sampleX <- ops[[sampleID]]
+# #   sampleX[,area := N*resX^2/10000]
+# #   # sampleX[,id:=climID]
+# # }
+# 
+# 
+# nSamples <- ceiling(dim(uniqueData)[1]/maxSitesRun)
+# set.seed(1)
+# sampleset <- sample(1:nSamples, nrow(uniqueData),  replace=T)
+# samples <- split(uniqueData, sampleset) 
+# 
+# # adding sampleID, sampleRow (= row within sample) 
+# uniqueData[,sampleID:=sampleset]
+# uniqueData[,sampleRow:=1:length(h),by=sampleID]
+# 
+# segID <- numeric(0)
+# for(i in 1:nSamples){
+#   sampleX <- samples[[i]]
+#   segID <- c(segID,sampleX$segID)
 # }
 
-
-nSamples <- ceiling(dim(uniqueData)[1]/maxSitesRun)
-set.seed(1)
-sampleset <- sample(1:nSamples, nrow(uniqueData),  replace=T)
-samples <- split(uniqueData, sampleset) 
-
-# adding sampleID, sampleRow (= row within sample) 
-uniqueData[,sampleID:=sampleset]
-uniqueData[,sampleRow:=1:length(h),by=sampleID]
-
-segID <- numeric(0)
-for(i in 1:nSamples){
-  sampleX <- samples[[i]]
-  segID <- c(segID,sampleX$segID)
-}
-
 save(data.all,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"/allData.rdata"))         ### All data
-save(uniqueData,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"/uniqueData.rdata"))    ### unique pixel combination to run in PREBAS
-save(samples,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"/samples.rdata"))    ### unique pixel combination to run in PREBAS
-save(XYsegID,segID,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"/XYsegID.rdata"))    ### Coordinates and segID of all pixels
+# save(uniqueData,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"/uniqueData.rdata"))    ### unique pixel combination to run in PREBAS
+# save(samples,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"/samples.rdata"))    ### unique pixel combination to run in PREBAS
+# save(XYsegID,segID,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"/XYsegID.rdata"))    ### Coordinates and segID of all pixels
 
 #### If needed (splitRun = TRUE), unique data is split to separate tables here to enable 
 #    running further scripts in multiple sections. Number of split parts is defined in splitRange variable (in settings).

@@ -63,7 +63,7 @@ climIDpath <- "C:/Users/minunno/Documents/research/FinSeg/some stuff/climID10km.
 
 startYearWeather <- 1971 ###1971 for Finnish weather dataBase
 startingYear <- 2015  #2019
-year2 <- 2019 ###year of the second measurement
+year2 <- 2018 ###year of the second measurement
 yearEnd <- 2021     #2024
 
 
@@ -146,12 +146,12 @@ harvscen = "NoHarv"
 
 ####set values for NAs and convert factor for prebas units
 baNA <- c(253:255); baConv<- 1
-blPerNA <- c(253:255); blPerConv<- 1
+blPerNA <- c(253:255); blPerConv<- 0.01
 dbhNA <- c(253:255); dbhConv <- 1
 vNA <- c(65533:65535); vConv <- 1
 hNA <- c(65533:65535); hConv <- 0.1
-pinePerNA <- c(253:255); pinePerConv <- 1
-sprucePerNA <- c(253:255); sprucePerConv <- 1
+pinePerNA <- c(253:255); pinePerConv <- 0.01
+sprucePerNA <- c(253:255); sprucePerConv <- 0.01
 siteTypeNA <- c(253:255); siteTypeConv <- 1
 
 ####settings for sitetype estimation

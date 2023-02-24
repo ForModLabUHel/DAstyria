@@ -151,13 +151,13 @@ data.all <- data.all[, siteType2021 := siteType2021 * siteTypeConv]
 
 
 ###tocheck!
-if(siteTypeX==year2){
-  data.all[,siteType:=siteType2]  
-}else if(siteTypeX==startingYear){
-  data.all[,siteType:=siteType1]  
-}else{
-  data.all[,siteType:=siteTypeX]  
-}
+# if(siteTypeX==year2){
+#   data.all[,siteType:=siteType2]  
+# }else if(siteTypeX==startingYear){
+#   data.all[,siteType:=siteType1]  
+# }else{
+#   data.all[,siteType:=siteTypeX]  
+# }
 data.all[siteType2015>5,siteType2015:=5]
 data.all[siteType2018>5,siteType2018:=5]
 data.all[siteType2021>5,siteType2021:=5]

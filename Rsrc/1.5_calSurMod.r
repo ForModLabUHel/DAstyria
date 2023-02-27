@@ -119,33 +119,30 @@ load(paste0(procDataPath,"init",startingYear,"/DA",year2,"/samples.rdata"))
     # dataX$lnVmod<-log(dataX$Vmod)
     # dataX$alpha<-NA
     dataX$st <- factor(dataX$st)
-    dataX[,BAtot:=(BAp+BAsp+BAb)]
+    dataX[,BAtot:=(BAconif+BAbl)]
     dataX[,BAh:=BAtot*H]
     dataX[,N:=BAtot/(pi*(D/200)^2)]
     b = -1.605 ###coefficient of Reineke
     dataX[,SDI:=N *(D/10)^b]
-    dataX[,rootBAp:=BAp^0.5]
-    dataX[,BAp2:=BAp^(2)]
-    full.modelV <-lm(Vmod~H+D+SDI+BAh+BAp+BAsp+BAb+st,data=dataX)
+    dataX[,rootBAconif:=BAconif^0.5]
+    dataX[,BAconif2:=BAconif^(2)]
+    full.modelV <-lm(Vmod~H+D+SDI+BAh+BAconif+BAbl+st,data=dataX)
     step.modelV <- stepAIC(full.modelV, direction = "both",
                           trace = FALSE)
-    full.modelB <-lm(Bmod~H+D+SDI+BAh+BAp+BAsp+BAb+st,data=dataX)
+    full.modelB <-lm(Bmod~H+D+SDI+BAh+BAconif+BAbl+st,data=dataX)
     step.modelB <- stepAIC(full.modelB, direction = "both",
                            trace = FALSE)
-    full.modelH <-lm(Hmod~H+D+SDI+BAh+BAp+BAsp+BAb+st,data=dataX)
+    full.modelH <-lm(Hmod~H+D+SDI+BAconif+BAbl+st,data=dataX)
     step.modelH <- stepAIC(full.modelH, direction = "both",
                            trace = FALSE)
-    full.modelD <-lm(Dmod~H+D+SDI+BAh+BAp+BAsp+BAb+st,data=dataX)
+    full.modelD <-lm(Dmod~H+D+SDI+BAh+BAconif+BAbl+st,data=dataX)
     step.modelD <- stepAIC(full.modelD, direction = "both",
                            trace = FALSE)
-    full.modelBp <-lm(BApmod~H+D+SDI+BAh+BAp+BAsp+BAb+st+rootBAp,data=dataX)
-    step.modelBp <- stepAIC(full.modelBp, direction = "both",
+    full.modelBconif <-lm(BAconifmod~H+D+SDI+BAh+BAconif+BAbl+st+rootBAconif,data=dataX)
+    step.modelBconif <- stepAIC(full.modelBconif, direction = "both",
                            trace = FALSE)
-    full.modelBsp <-lm(BAspmod~H+D+SDI+BAh+BAp+BAsp+BAb+st,data=dataX)
-    step.modelBsp <- stepAIC(full.modelBsp, direction = "both",
-                             trace = FALSE)
-    full.modelBd <-lm(BAdmod~H+D+SDI+BAh+BAp+BAsp+BAb+st,data=dataX)
-    step.modelBd <- stepAIC(full.modelBd, direction = "both",
+    full.modelBbl <-lm(BAblmod~H+D+SDI+BAh+BAconif+BAbl+st,data=dataX)
+    step.modelBbl <- stepAIC(full.modelBd, direction = "both",
                              trace = FALSE)
     # start<-as.vector(full.model$coefficients)
 ### Anonther option is to use nonlinear regression, which differed in error assumption. 
@@ -171,24 +168,22 @@ load(paste0(procDataPath,"init",startingYear,"/DA",year2,"/samples.rdata"))
     #                                  i5=start[12]
     #                                  ))
     #     
-    plot(step.modelV$fitted.values,dataX$Vmod,pch=".")
+    plot(step.modelV$fitted.values,dataX$Vmod,pch=".",col=2)
     abline(0,1)
-    plot(step.modelB$fitted.values,dataX$Bmod,pch=".")
+    plot(step.modelB$fitted.values,dataX$Bmod,pch=".",col=2)
     abline(0,1)
-    plot(step.modelH$fitted.values,dataX$Hmod,pch=".")
+    plot(step.modelH$fitted.values,dataX$Hmod,pch=".",col=2)
     abline(0,1)
-    plot(step.modelD$fitted.values,dataX$Dmod,pch=".")
+    plot(step.modelD$fitted.values,dataX$Dmod,pch=".",col=2)
     abline(0,1)
-    plot(step.modelBp$fitted.values,dataX$BApmod,pch=".")
+    plot(step.modelBconif$fitted.values,dataX$BAconifmod,pch=".",col=2)
     abline(0,1)
-    plot(step.modelBsp$fitted.values,dataX$BAspmod,pch=".")
-    abline(0,1)
-    plot(step.modelBd$fitted.values,dataX$BAdmod,pch=".")
+    plot(step.modelBbl$fitted.values,dataX$BAblmod,pch=".",col=2)
     abline(0,1)
     
     # summary(nonlinear)
     # summary(step.model)
     save(step.modelV,step.modelB,step.modelD,step.modelH,
-         step.modelBp,step.modelBsp,step.modelBd,
+         step.modelBconif,step.modelBbl,
          file="surErrMods/surMod.rdata") ###needs to be changed update name
     

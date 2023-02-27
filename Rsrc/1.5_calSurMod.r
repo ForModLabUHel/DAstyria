@@ -78,19 +78,16 @@ load(paste0(procDataPath,"init",startingYear,"/DA",year2,"/samples.rdata"))
     out <- multiPrebas(initPrebas)$multiOut
     Vx <- rowSums(out[,yearX,30,,1])
     Bx <- rowSums(out[,yearX,13,,1])
-    Bpx <- out[,yearX,13,1,1]
-    Bspx <- out[,yearX,13,2,1]
-    Bdx <- out[,yearX,13,3,1]
+    Bconx <- out[,yearX,13,1,1]
+    Bblx <- out[,yearX,13,2,1]
     Hx <- out[,yearX,11,1,1] * out[,yearX,13,1,1]/Bx +
-      out[,yearX,11,2,1] * out[,yearX,13,2,1]/Bx +
-      out[,yearX,11,3,1] * out[,yearX,13,3,1]/Bx
+      out[,yearX,11,2,1] * out[,yearX,13,2,1]/Bx
     Dx <- out[,yearX,12,1,1] * out[,yearX,13,1,1]/Bx +
-      out[,yearX,12,2,1] * out[,yearX,13,2,1]/Bx +
-      out[,yearX,12,3,1] * out[,yearX,13,3,1]/Bx
+      out[,yearX,12,2,1] * out[,yearX,13,2,1]/Bx
     
     PREBx <- data.table(segID=initPrebas$siteInfo[,1],V3 = Vx, B3 = Bx,
                         H3 = Hx, D3 = Dx,
-                        Bp3=Bpx,Bsp3=Bspx,Bd3=Bdx)
+                        Bcon3=Bconx,Bbl3=Bblx)
     print("runs completed")
     
     
@@ -101,7 +98,7 @@ load(paste0(procDataPath,"init",startingYear,"/DA",year2,"/samples.rdata"))
     ### Run settings & functions
 
     # load("C:/Users/minunno/GitHub/satRuns/data/inputUncer.rdata")
-    load(url("https://raw.githubusercontent.com/ForModLabUHel/satRuns/master/data/inputUncer.rdata"))
+    load(url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/data/inputUncer.rdata"))
     # load(paste0(procDataPath,"init",startingYear,"/","st",siteTypeX,"/XYsegID.rdata"))  
     # load(paste0("output/init",startingYear,"/","st",siteTypeX,"/CurrClim_sample1.rdata"))  
     # load(paste0("procData/init",startingYear,"/","st",siteTypeX,"/uniqueData.rdata"))  
@@ -109,11 +106,11 @@ load(paste0(procDataPath,"init",startingYear,"/DA",year2,"/samples.rdata"))
     # Vmod2019 <- rowSums(out[,yearX,6,])
     # load(paste0("initPrebas/init",startingYear,"/","st",siteTypeX,"/CurrClim_sample1.rdata"))  
     dataX <- data.table(cbind(initPrebas$multiInitVar[,3:5,1],initPrebas$multiInitVar[,5,2],
-                              initPrebas$multiInitVar[,5,3],initPrebas$siteInfo[,3],
+                              initPrebas$siteInfo[,3],
                               PREBx$V3,PREBx$B3,PREBx$H3,PREBx$D3,
-                              PREBx$Bp3,PREBx$Bsp3,PREBx$Bd3))
-    setnames(dataX,c("H","D","BAp","BAsp","BAb","st","Vmod","Bmod",
-                     "Hmod","Dmod","BApmod","BAspmod","BAdmod"))
+                              PREBx$Bcon3,PREBx$Bbl3))
+    setnames(dataX,c("H","D","BAconif","BAbl","st","Vmod","Bmod",
+                     "Hmod","Dmod","BAconifmod","BAblmod"))
     # if(!all(unique(dataX$st) %in% unique(uniqueData$siteType))) stop("not all siteTypes of the tile are in the sample")
     
     #### Here we use stepwise regression to construct an emulator for stand variables prediction

@@ -1,6 +1,7 @@
 
 ####function to initialize the model
-create_prebas_input.f = function(clim, data.sample, nYears, startingYear=0,domSPrun=0,nLayers=2) { # dat = climscendataset
+create_prebas_input.f = function(clim, data.sample, nYears, pX=pCROB,
+                                 startingYear=0,domSPrun=0,nLayers=2) { # dat = climscendataset
   #domSPrun=0 initialize model for mixed forests according to data inputs 
   #domSPrun=1 initialize model only for dominant species 
   nSites <- nrow(data.sample)
@@ -181,6 +182,7 @@ create_prebas_input.f = function(clim, data.sample, nYears, startingYear=0,domSP
                               defaultThin = defaultThin,
                               ClCut = ClCut,
                               areas =areas,
+                              pCROBAS = pX,
                               # energyCut = energyCut, 
                               multiInitVar = as.array(initVar),
                               PAR = clim$PAR[, 1:(nYears*365)],

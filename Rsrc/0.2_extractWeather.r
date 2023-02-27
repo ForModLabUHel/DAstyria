@@ -12,7 +12,7 @@ myRaster <- projectRaster(shapeRast,crs =  "+proj=longlat +datum=WGS84")
 plot(myRaster)
 
 # extract the Altri weather data from clipick from 1.1.2000-2.1.2000 at 10 km grid
-wDs <- getWD("Styria", myRaster, 10, 2014, 1, 1, 2022, 12, 31)
+wDs <- getWD("Styria", myRaster, 10, startingYear, 1, 1, yearEnd, 12, 31)
 
 # Find the unique data tables
 # weather data for the site is here 

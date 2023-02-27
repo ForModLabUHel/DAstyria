@@ -1,6 +1,6 @@
 
 ####function to initialize the model
-create_prebas_input.f = function(r_no, clim, data.sample, nYears, startingYear=0,domSPrun=0) { # dat = climscendataset
+create_prebas_input.f = function(clim, data.sample, nYears, startingYear=0,domSPrun=0,nLayers=2) { # dat = climscendataset
   #domSPrun=0 initialize model for mixed forests according to data inputs 
   #domSPrun=1 initialize model only for dominant species 
   nSites <- nrow(data.sample)
@@ -9,11 +9,11 @@ create_prebas_input.f = function(r_no, clim, data.sample, nYears, startingYear=0
   ###4 = nLayers; 5 = nSpecies;
   ###6=SWinit;   7 = CWinit; 8 = SOGinit; 9 = Sinit
   
-  siteInfo <- matrix(c(NA,NA,NA,160,0,0,20,3,3,413,0.45,0.118),nSites,12,byrow = T)
+  siteInfo <- matrix(c(NA,NA,NA,160,0,0,20,nLayers,nLayers,413,0.45,0.118),nSites,12,byrow = T)
   #siteInfo <- matrix(c(NA,NA,NA,3,3,160,0,0,20),nSites,9,byrow = T)
   siteInfo[,1] <- data.sample$segID
-  siteInfo[,2] <- as.numeric(data.sample[,climID])
-  siteInfo[,3] <- data.sample[,siteType]
+  siteInfo[,2] <- data.sample$climID
+  siteInfo[,3] <- data.sample$siteType
   
   # litterSize <- matrix(0,3,3)
   # litterSize[1,1:2] <- 30
@@ -23,20 +23,23 @@ create_prebas_input.f = function(r_no, clim, data.sample, nYears, startingYear=0
   ###Initialise model
   # initVardension nSites,variables, nLayers
   # variables: 1 = species; 2 = Age; 3 = H; 4=dbh; 5 = ba; 6 = Hc
-  initVar <- array(NA, dim=c(nSites,7,3))
-  data.sample[,baP:= (ba * pineP/(pineP+spruceP+blp))]
-  data.sample[,baSP:= (ba * spruceP/(pineP+spruceP+blp))]
-  data.sample[,baB:= (ba * blp/(pineP+spruceP+blp))]
-  data.sample[,dbhP:= dbh]
-  data.sample[,dbhSP:= dbh]
-  data.sample[,hP:= h]
-  data.sample[,hSP:= h]
+  setnames(data.sample,c(paste0("ba",startingYear),paste0("h",startingYear),
+                         paste0("dbh",startingYear),paste0("bl",startingYear),
+                         paste0("conif",startingYear)),
+           c("ba","h","dbh","bl","conif"))
+  initVar <- array(NA, dim=c(nSites,7,nLayers))
+  data.sample[,baConif:= (ba * conif/(conif+bl))]
+  data.sample[,baBl:= (ba * bl/(conif+bl))]
+  data.sample[,dbhConif:= dbh]
+  data.sample[,dbhBl:= dbh]
+  data.sample[,hConif:= h]
+  data.sample[,hBl:= h]
   
   data.sample[,N:=ba/(pi*(dbh/2)^2/10000)]
   
   areas <- data.sample$area
   
-  initVar[,1,] <- as.numeric(rep(1:3,each=nSites))
+  initVar[,1,] <- as.numeric(rep(c(1,3),each=nSites))
   initVar[,2,] <- as.numeric(data.sample[,h])*3.3  # round(as.numeric(data.sample[,age]))  ##### set to 1 because we do not know age
   initVar[,3,] <- as.numeric(data.sample[,h])
   # initVar[,3,][which(initVar[,3,]<1.5)] <- 1.5  ####if H < 1.5 set to 1.5
@@ -49,100 +52,98 @@ create_prebas_input.f = function(r_no, clim, data.sample, nYears, startingYear=0
     for(jx in 1:nSites) initVar[jx,5,ix[jx]] = as.numeric(data.sample[, ba])[jx]
   } else{
     ###initialize model for mixed forest runs
-    initVar[,5,1] <- as.numeric(data.sample[,(ba * pineP/(pineP+spruceP+blp))])
-    initVar[,5,2] <- as.numeric(data.sample[,(ba * spruceP/(pineP+spruceP+blp))])
-    initVar[,5,3] <- as.numeric(data.sample[,(ba * blp/(pineP+spruceP+blp))])
+    initVar[,5,1] <- as.numeric(data.sample[,(ba * conif/(conif+bl))])
+    initVar[,5,2] <- as.numeric(data.sample[,(ba * bl/(conif+bl))])
     
-    if(varHD){ #### if true will vary H and D of pine and spruce using siteType
-      ###increase spruceP dbh 10% for spruceP sitetype 1:2
-      data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP > baP,X:=(ba-1.1*baSP-baB)/baP]
-      data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP > baP,dbhP:=X*dbh]
-      data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP > baP,dbhSP:=1.1*dbh]
-      data.sample[pineP>0. & spruceP >0. & siteType<2.5  & baSP > baP & dbhP<0.5,dbhSP:=((ba-(0.5/dbh)*baP-baB)/baSP)*dbh]
-      data.sample[pineP>0. & spruceP >0. & siteType<2.5  & baSP > baP & dbhP<0.5,dbhP:=0.5]
+    # !!To check start
+    # if(varHD){ #### if true will vary H and D of pine and spruce using siteType
+    #   ###increase spruceP dbh 10% for spruceP sitetype 1:2
+    #   data.sample[conif>0. & spruceP >0. & siteType<2.5 & baSP > baP,X:=(ba-1.1*baSP-baB)/baP]
+    #   data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP > baP,dbhP:=X*dbh]
+    #   data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP > baP,dbhSP:=1.1*dbh]
+    #   data.sample[pineP>0. & spruceP >0. & siteType<2.5  & baSP > baP & dbhP<0.5,dbhSP:=((ba-(0.5/dbh)*baP-baB)/baSP)*dbh]
+    #   data.sample[pineP>0. & spruceP >0. & siteType<2.5  & baSP > baP & dbhP<0.5,dbhP:=0.5]
+    #   
+    #   data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP <= baP,dbhSP:=dbh * (ba - 0.9*baP - baB)/baSP]
+    #   data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP <= baP,dbhP:=pmax(0.9*dbh,0.3)]
+    #   
+    #   ####increase spruceP h 10% for spruceP sitetype 1:2
+    #   data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP > baP,X:=(ba-1.1*baSP-baB)/baP]
+    #   data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP > baP,hP:=X*h]
+    #   data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP > baP,hSP:=1.1*h]
+    #   data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP > baP & hP<1.5,hSP:=((ba-(1.5/h)*baP-baB)/baSP)*h]
+    #   data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP > baP & hP<1.5,hP:=1.5]
+    #   
+    #   data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP <= baP,hSP:=h * (ba - 0.9*baP - baB)/baSP]
+    #   data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP <= baP,hP:=pmax(0.9*h,1.3)]
+    #   
+    #   ####increase spruceP dbh 5% for spruceP sitetype 3
+    #   data.sample[pineP>0. & spruceP >0. & siteType==3 & baSP > baP,X:=(ba-1.05*baSP-baB)/baP]
+    #   data.sample[pineP>0. & spruceP >0. & siteType==3 & baSP > baP,dbhP:=X*dbh]
+    #   data.sample[pineP>0. & spruceP >0. & siteType==3 & baSP > baP,dbhSP:=1.05*dbh]
+    #   data.sample[pineP>0. & spruceP >0. & siteType==3 & baSP > baP & dbhP<0.5,dbhSP:=((ba-(0.5/dbh)*baP-baB)/baSP)*dbh]
+    #   data.sample[pineP>0. & spruceP >0. & siteType==3 & baSP > baP & dbhP<0.5,dbhP:=0.5]
+    #   
+    #   data.sample[pineP>0. & spruceP >0. & siteType==3 & baSP <= baP,dbhSP:=dbh * (ba - 0.95*baP - baB)/baSP]
+    #   data.sample[pineP>0. & spruceP >0. & siteType==3 & baSP <= baP,dbhP:=pmax(0.95*dbh,0.3)]
+    #   
+    #   ####increase spruceP h 5% for spruceP sitetype 3
+    #   data.sample[pineP>0. & spruceP >0. & siteType==3,X:=(ba-1.05*baSP-baB)/baP]
+    #   data.sample[pineP>0. & spruceP >0. & siteType==3,hP:=X*h]
+    #   data.sample[pineP>0. & spruceP >0. & siteType==3,hSP:=1.05*h]
+    #   data.sample[pineP>0. & spruceP >0. & siteType==3 & hP<1.5,hSP:=((ba-(1.5/h)*baP-baB)/baSP)*h]
+    #   data.sample[pineP>0. & spruceP >0. & siteType==3 & hP<1.5,hP:=1.5]
+    #   
+    #   data.sample[pineP>0. & spruceP >0. & siteType==3 & baSP <= baP,hSP:=h * (ba - 0.95*baP - baB)/baSP]
+    #   data.sample[pineP>0. & spruceP >0. & siteType==3 & baSP <= baP,hP:=pmax(0.95*h,1.3)]
+    #   
+    #   ####increase pineP dbh 10% for sitetype >= 4
+    #   data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP,X:=(ba-1.1*baP-baB)/baSP]
+    #   data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP,dbhSP:=X*dbh]
+    #   data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP,dbhP:=1.1*dbh]
+    #   data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP & dbhSP<0.5,dbhP:=((ba-(0.5/dbh)*baSP-baB)/baP)*dbh]
+    #   data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP & dbhSP<0.5,dbhSP:=0.5]
+    #   data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP,dbhP:=dbh * (ba - 0.9*baSP - baB)/baP]
+    #   data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP,dbhSP:=pmax(0.9*dbh,0.3)]
+    #   ####increase pineP h 10% for sitetype >= 4
+    #   data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP,X:=(ba-1.1*baP-baB)/baSP]
+    #   data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP,hSP:=X*h]
+    #   data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP,hP:=1.1*h]
+    #   data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP & hSP<1.5,hP:=((ba-(1.5/h)*baSP-baB)/baP)*h]
+    #   data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP & hSP<1.5,hSP:=1.5]
+    #   data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP,hP:=h * (ba - 0.9*baSP - baB)/baP]
+    #   data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP,hSP:=pmax(0.9*h,1.3)]
+    #   initVar[,3,1] <- as.numeric(data.sample[,hP])
+    #   initVar[,3,2] <- as.numeric(data.sample[,hSP])
+    #   initVar[,4,1] <- as.numeric(data.sample[,dbhP])
+    #   initVar[,4,2] <- as.numeric(data.sample[,dbhSP])
       
-      data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP <= baP,dbhSP:=dbh * (ba - 0.9*baP - baB)/baSP]
-      data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP <= baP,dbhP:=pmax(0.9*dbh,0.3)]
-      
-      ####increase spruceP h 10% for spruceP sitetype 1:2
-      data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP > baP,X:=(ba-1.1*baSP-baB)/baP]
-      data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP > baP,hP:=X*h]
-      data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP > baP,hSP:=1.1*h]
-      data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP > baP & hP<1.5,hSP:=((ba-(1.5/h)*baP-baB)/baSP)*h]
-      data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP > baP & hP<1.5,hP:=1.5]
-      
-      data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP <= baP,hSP:=h * (ba - 0.9*baP - baB)/baSP]
-      data.sample[pineP>0. & spruceP >0. & siteType<2.5 & baSP <= baP,hP:=pmax(0.9*h,1.3)]
-      
-      ####increase spruceP dbh 5% for spruceP sitetype 3
-      data.sample[pineP>0. & spruceP >0. & siteType==3 & baSP > baP,X:=(ba-1.05*baSP-baB)/baP]
-      data.sample[pineP>0. & spruceP >0. & siteType==3 & baSP > baP,dbhP:=X*dbh]
-      data.sample[pineP>0. & spruceP >0. & siteType==3 & baSP > baP,dbhSP:=1.05*dbh]
-      data.sample[pineP>0. & spruceP >0. & siteType==3 & baSP > baP & dbhP<0.5,dbhSP:=((ba-(0.5/dbh)*baP-baB)/baSP)*dbh]
-      data.sample[pineP>0. & spruceP >0. & siteType==3 & baSP > baP & dbhP<0.5,dbhP:=0.5]
-      
-      data.sample[pineP>0. & spruceP >0. & siteType==3 & baSP <= baP,dbhSP:=dbh * (ba - 0.95*baP - baB)/baSP]
-      data.sample[pineP>0. & spruceP >0. & siteType==3 & baSP <= baP,dbhP:=pmax(0.95*dbh,0.3)]
-      
-      ####increase spruceP h 5% for spruceP sitetype 3
-      data.sample[pineP>0. & spruceP >0. & siteType==3,X:=(ba-1.05*baSP-baB)/baP]
-      data.sample[pineP>0. & spruceP >0. & siteType==3,hP:=X*h]
-      data.sample[pineP>0. & spruceP >0. & siteType==3,hSP:=1.05*h]
-      data.sample[pineP>0. & spruceP >0. & siteType==3 & hP<1.5,hSP:=((ba-(1.5/h)*baP-baB)/baSP)*h]
-      data.sample[pineP>0. & spruceP >0. & siteType==3 & hP<1.5,hP:=1.5]
-      
-      data.sample[pineP>0. & spruceP >0. & siteType==3 & baSP <= baP,hSP:=h * (ba - 0.95*baP - baB)/baSP]
-      data.sample[pineP>0. & spruceP >0. & siteType==3 & baSP <= baP,hP:=pmax(0.95*h,1.3)]
-      
-      ####increase pineP dbh 10% for sitetype >= 4
-      data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP,X:=(ba-1.1*baP-baB)/baSP]
-      data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP,dbhSP:=X*dbh]
-      data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP,dbhP:=1.1*dbh]
-      data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP & dbhSP<0.5,dbhP:=((ba-(0.5/dbh)*baSP-baB)/baP)*dbh]
-      data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP & dbhSP<0.5,dbhSP:=0.5]
-      data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP,dbhP:=dbh * (ba - 0.9*baSP - baB)/baP]
-      data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP,dbhSP:=pmax(0.9*dbh,0.3)]
-      ####increase pineP h 10% for sitetype >= 4
-      data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP,X:=(ba-1.1*baP-baB)/baSP]
-      data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP,hSP:=X*h]
-      data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP,hP:=1.1*h]
-      data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP & hSP<1.5,hP:=((ba-(1.5/h)*baSP-baB)/baP)*h]
-      data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP & hSP<1.5,hSP:=1.5]
-      data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP,hP:=h * (ba - 0.9*baSP - baB)/baP]
-      data.sample[pineP>0. & spruceP >0. & siteType>3.5 & baP > baSP,hSP:=pmax(0.9*h,1.3)]
-      initVar[,3,1] <- as.numeric(data.sample[,hP])
-      initVar[,3,2] <- as.numeric(data.sample[,hSP])
-      initVar[,4,1] <- as.numeric(data.sample[,dbhP])
-      initVar[,4,2] <- as.numeric(data.sample[,dbhSP])
-      
-    }
-    
+    # }
+    # !!To check end
   }
   
   # initVar[,6,] <- as.numeric(data.sample[,hc])
   
   ###check which BA ==0. and set to 0 the rest of the variables
-  NoPine <- which(initVar[,5,1]==0.)
-  NoSpruce <- which(initVar[,5,2]==0.)
-  NoDecid <- which(initVar[,5,3]==0.)
+  NoConif <- which(initVar[,5,1]==0.)
+  NoDecid <- which(initVar[,5,2]==0.)
   
-  siteInfo[NoPine,8:9] <- siteInfo[NoPine,8:9] - 1
-  siteInfo[NoSpruce,8:9] <- siteInfo[NoSpruce,8:9] - 1
+  siteInfo[NoConif,8:9] <- siteInfo[NoConif,8:9] - 1
   siteInfo[NoDecid,8:9] <- siteInfo[NoDecid,8:9] - 1
   
   #siteInfo[NoPine,4] <- siteInfo[NoPine,4] - 1
   #siteInfo[NoSpruce,4] <- siteInfo[NoSpruce,4] - 1
   #siteInfo[NoDecid,4] <- siteInfo[NoDecid,4] - 1
-  initVar[NoPine,3:6,1] <- 0.
-  initVar[NoSpruce,3:6,2] <- 0.
-  initVar[NoDecid,3:6,3] <- 0.
-  initVar[NoSpruce,,2] <- initVar[NoSpruce,,3]
-  initVar[NoPine,,1:2] <- initVar[NoPine,,2:3]
+  initVar[NoConif,3:6,1] <- 0.
+  initVar[NoDecid,3:6,2] <- 0.
+  initVar[NoConif,,1] <- initVar[NoConif,,2]
+  # initVar[NoPine,,1:2] <- initVar[NoPine,,2:3]
   
   nLay1 <- which(siteInfo[,8]==1)
-  nLay2 <- which(siteInfo[,8]==2)
-  initVar[nLay1,3:7,2:3] <- 0
-  initVar[nLay2,3:7,3] <- 0
+  # nLay2 <- which(siteInfo[,8]==2)
+  initVar[nLay1,3:7,2] <- 0
+  initVar[,7,] <- 0
+  # initVar[nLay2,3:7,3] <- 0
   # initVar[which(initVar[,5,1]==0.),,1] <- initVar[which(initVar[,5,1]==0.),,2]
   # initVar[which(initVar[,5,1]==0.),,2] <- initVar[which(initVar[,5,1]==0.),,3]
   # initVar[which(initVar[,5,1]==0.),1,3] <- 1
@@ -169,7 +170,7 @@ create_prebas_input.f = function(r_no, clim, data.sample, nYears, startingYear=0
   #   CO2tran = t( dcast(dat[, list(climID, rday, CO2)], rday ~ climID,
   #                      value.var="CO2")[, -1])
   # }
-  siteInfo[, 2]  = match(as.numeric(siteInfo[, 2]), as.numeric(rownames(clim[[1]])))
+  # siteInfo[, 2]  = match(as.numeric(siteInfo[, 2]), as.numeric(rownames(clim[[1]])))
   # siteInfo[, 2]  = match(siteInfo[,2], unique(dat$climID))
   
   # defaultThin=as.numeric(1-data.sample[, cons])

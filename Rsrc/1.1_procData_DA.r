@@ -228,65 +228,66 @@ data.all[,dH2 := (h2021-h2018)/(yearEnd - year2)]
 data.all[,dD1 := (dbh2018-dbh2015)/(year2 - startingYear)]
 data.all[,dD2 := (dbh2021-dbh2018)/(yearEnd - year2)]
 
-####not grupping
-####group pixels by same values
-# data.all[, segID := .GRP, by = .(ba, blp,dbh, h, pineP, spruceP, 
-#                                  siteType1,siteType2, climID,dVy,v2,
-#                                  dBAy,ba2,dHy,h2,dDBHy,dbh2,
-#                                  pineP2, spruceP2,blp2)]
-# 
-# ####Count segID pix
-# data.all[, npix:=.N, segID]
-# 
-# # uniqueData <- data.table()
-# ####find unique initial conditions
-# uniqueData <- unique(data.all[clCut==0,.(segID,npix,climID,ba,blp,dbh,h,pineP,spruceP,
-#                                          siteType1,siteType2,dBAy,ba2,dVy,v2,
-#                                          dHy,h2,dDBHy,dbh2,pineP2, spruceP2,blp2)])
-# 
-# uniqueData[,uniqueKey:=1:nrow(uniqueData)]
-# setkey(uniqueData, uniqueKey)
-# # uniqueData[,N:=ba/(pi*(dbh/200)^2)]
-# # range(uniqueData$N)
-# 
-# uniqueData[,area:=npix*resX^2/10000]
-# 
-# ###assign ID to similar pixels
-# XYsegID <- data.all[,.(x,y,segID)]
-# 
-# ###!!!!!!!!!!!!########end careful with this part##########!!!!!!!!#########
-# 
-# # nSamples <- ceiling(dim(uniqueData)[1]/20000)
-# # sampleID <- 1
-# # 
-# # for(sampleID in sampleIDs){
-# #   set.seed(1)
-# #   samplesX <- split(uniqueData, sample(1:nSample, nrow(uniqueData), replace=T))
-# #   sampleX <- ops[[sampleID]]
-# #   sampleX[,area := N*resX^2/10000]
-# #   # sampleX[,id:=climID]
-# # }
-# 
-# 
-# nSamples <- ceiling(dim(uniqueData)[1]/maxSitesRun)
-# set.seed(1)
-# sampleset <- sample(1:nSamples, nrow(uniqueData),  replace=T)
-# samples <- split(uniqueData, sampleset) 
-# 
-# # adding sampleID, sampleRow (= row within sample) 
-# uniqueData[,sampleID:=sampleset]
-# uniqueData[,sampleRow:=1:length(h),by=sampleID]
-# 
-# segID <- numeric(0)
-# for(i in 1:nSamples){
-#   sampleX <- samples[[i]]
-#   segID <- c(segID,sampleX$segID)
+###not grupping
+###group pixels by same values
+data.all[, segID := .GRP, by = .(ba2015, bl2015,dbh2015, h2015, conif2015,siteType2015,climID,
+                                 ba2018, bl2018,dbh2018, h2018, conif2018,siteType2018,
+                                 ba2021, bl2021,dbh2021, h2021, conif2021,siteType2021)]
+
+####Count segID pix
+data.all[, npix:=.N, segID]
+
+# uniqueData <- data.table()
+####find unique initial conditions
+uniqueData <- unique(data.all[,.(segID,npix,climID,
+                                         ba2015, bl2015,dbh2015, h2015, conif2015,siteType2015,
+                                         ba2018, bl2018,dbh2018, h2018, conif2018,siteType2018,
+                                         ba2021, bl2021,dbh2021, h2021, conif2021,siteType2021
+                                         )])
+
+uniqueData[,uniqueKey:=1:nrow(uniqueData)]
+setkey(uniqueData, uniqueKey)
+# uniqueData[,N:=ba/(pi*(dbh/200)^2)]
+# range(uniqueData$N)
+
+uniqueData[,area:=npix*resX^2/10000]
+
+###assign ID to similar pixels
+XYsegID <- data.all[,.(x,y,segID)]
+
+###!!!!!!!!!!!!########end careful with this part##########!!!!!!!!#########
+
+# nSamples <- ceiling(dim(uniqueData)[1]/20000)
+# sampleID <- 1
+#
+# for(sampleID in sampleIDs){
+#   set.seed(1)
+#   samplesX <- split(uniqueData, sample(1:nSample, nrow(uniqueData), replace=T))
+#   sampleX <- ops[[sampleID]]
+#   sampleX[,area := N*resX^2/10000]
+#   # sampleX[,id:=climID]
 # }
 
+
+nSamples <- ceiling(dim(uniqueData)[1]/maxSitesRun)
+set.seed(1)
+sampleset <- sample(1:nSamples, nrow(uniqueData),  replace=T)
+samples <- split(uniqueData, sampleset)
+
+# adding sampleID, sampleRow (= row within sample)
+uniqueData[,sampleID:=sampleset]
+uniqueData[,sampleRow:=1:length(h2015),by=sampleID]
+
+segID <- numeric(0)
+for(i in 1:nSamples){
+  sampleX <- samples[[i]]
+  segID <- c(segID,sampleX$segID)
+}
+
 save(data.all,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"/allData.rdata"))         ### All data
-# save(uniqueData,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"/uniqueData.rdata"))    ### unique pixel combination to run in PREBAS
-# save(samples,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"/samples.rdata"))    ### unique pixel combination to run in PREBAS
-# save(XYsegID,segID,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"/XYsegID.rdata"))    ### Coordinates and segID of all pixels
+save(uniqueData,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"/uniqueData.rdata"))    ### unique pixel combination to run in PREBAS
+save(samples,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"/samples.rdata"))    ### unique pixel combination to run in PREBAS
+save(XYsegID,segID,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"/XYsegID.rdata"))    ### Coordinates and segID of all pixels
 
 #### If needed (splitRun = TRUE), unique data is split to separate tables here to enable 
 #    running further scripts in multiple sections. Number of split parts is defined in splitRange variable (in settings).

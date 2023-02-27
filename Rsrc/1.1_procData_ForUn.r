@@ -1,10 +1,10 @@
 # Run settings 
 library(devtools)
-source_url("https://raw.githubusercontent.com/ForModLabUHel/satRuns/master/Rsrc/settings.r")
+source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc/settings.r")
 if(file.exists("localSettings.r")) {source("localSettings.r")} # use settings file from local directory if one exists
 
 
-if(startingYear!= siteTypeX){
+if(startingYear != siteTypeX){
   siteTypeX = startingYear
   warning("siteTypeX changed to startingYear")
 } 
@@ -14,60 +14,71 @@ setwd(generalPath)
 if (splitRun) {
   # If output is set to be split to smaller parts (splitRun = TRUE), create separate
   # folder for the split data tables.
-  mkfldr_split <- paste0("procData/",paste0("init",startingYear,"/ForUn",yearEnd,"_split"))
+  mkfldr_split <- paste0("procData/",paste0("init",startingYear,"/ForUn",year2,"_split"))
   if(!dir.exists(file.path(generalPath, mkfldr_split))) {
     dir.create(file.path(generalPath, mkfldr_split), recursive = TRUE)
   }
 }
 
-mkfldr <- paste0("procData/",paste0("init",startingYear,"/ForUn",yearEnd))
+mkfldr <- paste0("procData/",paste0("init",startingYear,"/ForUn",year2))
 if(!dir.exists(file.path(generalPath, mkfldr))) {
   dir.create(file.path(generalPath, mkfldr), recursive = TRUE)
 }
 
 
 ###extract CurrClim IDs
-rastX <- raster(baRast)
+rastRef <- raster(baRast2015)
 if(testRun){
-  extNew <- extent(rastX)
-  extNew[2]   <- (extent(rastX)[1] + (extent(rastX)[2] - extent(rastX)[1])*fracTest)
-  extNew[4]   <- (extent(rastX)[3] + (extent(rastX)[4] - extent(rastX)[3])*fracTest)
-  rastX <- crop(rastX,extNew)
+  extNew <- extent(rastRef)
+  extNew[1:2]   <- (extent(rastRef)[1] + (extent(rastRef)[2]))/2 + c(-10000,10000)
+  extNew[3:4]   <- (extent(rastRef)[3] + (extent(rastRef)[4]))/2 + c(-10000,10000)
+  rastRef <- crop(rastRef,extNew)
   maxSitesRun <- maxSitesRunTest
 }
 
+
 climID <- raster(climIDpath)
+climID <- crop(climID,rastRef)
+climID <- raster(vals=values(climID),ext=extent(rastRef),crs=crs(rastRef),
+                 nrows=dim(rastRef)[1],ncols=dim(rastRef)[2])
 
-rm(rastX)
-gc()
+fileNames <- c(baRast2015,baRast2018,baRast2021,
+               blPerRast2015,blPerRast2018,blPerRast2021,
+               dbhRast2015,dbhRast2018,dbhRast2021,
+               vRast2015,vRast2018,vRast2021,
+               hRast2015,hRast2018,hRast2021,
+               conifPerRast2015,conifPerRast2018,conifPerRast2021,
+               # sprucePerRast,
+               siteTypeRast2015,siteTypeRast2018,siteTypeRast2021,
+               if (mgmtmask==T) mgmtmaskRast)
 
-
-fileNames <- c(baRast,
-               blPerRast,
-               dbhRast,
-               vRast,
-               hRast,
-               pinePerRast,
-               sprucePerRast,
-               siteTypeRast)
+years <- c(2015,2018,2021)
+varNames <- c(paste0("ba",years),paste0("bl",years),
+              paste0("dbh",years),paste0("v",years),paste0("h",years),
+              paste0("conif",years),paste0("siteType",years),
+              if (mgmtmask==T) "mgmtmask","climID")
 
 for(i in 1:length(fileNames)){
   rastX <- raster(fileNames[i])
-  if(testRun) rastX <- crop(rastX,extNew)    ####if it is a test run rasters are cropped to a smaller area
+  if(testRun) rastX <- crop(rastX,rastRef)    ####if it is a test run rasters are cropped to a smaller area
+  rastX <- raster(vals=values(rastX),ext=extent(rastRef),crs=crs(rastRef),
+                  nrows=dim(rastRef)[1],ncols=dim(rastRef)[2])
+  
   dataX <- data.table(rasterToPoints(rastX))
+  setnames(dataX,c("x","y",varNames[i]))
+  setkey(dataX,x,y)
   if(i==1){
     data.all <- dataX 
+    setkey(data.all,x,y)
   }else{
-    data.all <- merge(data.all,dataX)
+    data.all <- merge(data.all,dataX,all=T)
+    setkey(data.all,x,y)
   }
   print(fileNames[i])
 }
 
 ###attach weather ID
 data.all$climID <- extract(climID,data.all[,.(x,y)])
-# dataX <- data.table(rasterToPoints(climIDs))
-# data.all <- merge(data.all,dataX)
-setnames(data.all,c("x","y","ba","blp","dbh","v","h","pineP","spruceP","siteType","climID"))
 
 ##filter data 
 data.all <- data.all[!ba %in% baNA]
@@ -121,10 +132,10 @@ data.all[, npix:=.N, segID]
 
 # uniqueData <- data.table()
 ####find unique initial conditions
-uniqueData <- unique(data.all[clCut==0,.(segID,npix,ba,blp,dbh,h,pineP,spruceP,siteType,N,climID,segID,npix)])
+uniqueData <- unique(data.all[clCut2015==0,.(segID,npix,ba2015,blPerRast2015,dbh2015,h2015,conif2015,siteType2015,N2015,climID)])
+
 uniqueData[,uniqueKey:=1:nrow(uniqueData)]
 setkey(uniqueData, uniqueKey)
-uniqueData[,N:=ba/(pi*(dbh/200)^2)]
 # range(uniqueData$N)
 # uniqueData[,area:=npix*resX^2/10000]
 
@@ -151,7 +162,7 @@ samples <- split(uniqueData, sampleset)
 
 # adding sampleID, sampleRow (= row within sample) 
 uniqueData[,sampleID:=sampleset]
-uniqueData[,sampleRow:=1:length(h),by=sampleID]
+uniqueData[,sampleRow:=1:length(h2015),by=sampleID]
 
 segID <- numeric(0)
 for(i in 1:nSamples){

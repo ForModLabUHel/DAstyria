@@ -1,10 +1,10 @@
 library(devtools)
 # Run settings (if modifiedSettings is not set to TRUE in batch job script, default settings from Github will be used)
-source_url("https://raw.githubusercontent.com/ForModLabUHel/satRuns/master/Rsrc/settings.r")
+source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc/settings.r")
 if(file.exists("localSettings.r")) {source("localSettings.r")} # use settings in local directory if one exists
 
 # Run functions 
-source_url("https://raw.githubusercontent.com/ForModLabUHel/satRuns/master/Rsrc/functions.r")
+source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc/functions.r")
 
 
 ###check and create output directories
@@ -25,20 +25,25 @@ load(paste0(procDataPath,"init",startingYear,"/DA",year2,"/samples.rdata"))
   # resample siteType using a uniform distribution 
   samples[[sampleID]]$siteType <- sample(1:5,nrow(samples[[sampleID]]),replace = T)
 
-  if(rcpfile=="CurrClim"){
-    load(paste(climatepath, rcpfile,".rdata", sep=""))  
-    setnames(dat,"id","climID")
-  } else{
-    load(paste(climatepath, rcpfile, sep=""))  
-  }
+###load weather inputs
+  load(climatepath)
+  
+  # if(rcpfile=="CurrClim"){
+  #   load(paste(climatepath, rcpfile,".rdata", sep=""))  
+  #   setnames(dat,"id","climID")
+  # } else{
+  #   load(paste(climatepath, rcpfile, sep=""))  
+  # }
   
   ## Prepare the same initial state for all harvest scenarios that are simulated in a loop below
     data.sample <- samples[[sampleID]]
     totAreaSample <- sum(data.sample$area)
     
     ###check if climID matches
-    allclIDs <- unique(dat$climID)
+    allclIDs <- 1:nrow(PAR)#unique(dat$climID)
     samClIds <- unique(data.sample$climID)
+    newClimIDs <- match(data.sample$climID,samClIds)
+    data.sample$climID <- newClimIDs
     if(!all(samClIds %in% allclIDs)){
       opsClim <- samClIds[which(!samClIds %in% allclIDs)]
       dt = data.table(allclIDs, val = allclIDs) # you'll see why val is needed in a sec
@@ -50,10 +55,20 @@ load(paste0(procDataPath,"init",startingYear,"/DA",year2,"/samples.rdata"))
       data.sample$climID <- mapvalues(data.sample$climID,replX[[1]],replX[[2]])
     }
     
-    clim = prep.climate.f(dat, data.sample, startingYear, nYears,startYearWeather)
+
+    ##process weather inputs    
+    # clim = prep.climate.f(dat, data.sample, startingYear, nYears,startYearWeather)
+    clim <- list()
+    clim$PAR <- PAR[samClIds,]
+    clim$VPD <- VPD[samClIds,]
+    clim$TAir <- TAir[samClIds,]
+    clim$Precip <- Precip[samClIds,]
+    clim$CO2 <- CO2[samClIds,]
     
+    # change nYears
+    nYears1=year2-startingYear
     # Region = nfiareas[ID==r_no, Region]
-    initPrebas = create_prebas_input.f(r_no, clim, data.sample, nYears = nYears,
+    initPrebas = create_prebas_input.f(clim, data.sample, nYears = nYears1,
                                        startingYear = startingYear,domSPrun=domSPrun)
     
     print("model initialized")

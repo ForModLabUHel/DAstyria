@@ -64,11 +64,13 @@ load(paste0(procDataPath,"init",startingYear,"/DA",year2,"/samples.rdata"))
     clim$TAir <- TAir[samClIds,]
     clim$Precip <- Precip[samClIds,]
     clim$CO2 <- CO2[samClIds,]
-    
+
+    # px=pCROB
+    # px[17,] = pCROB[17,]*0.03
     # change nYears
     nYears1=year2-startingYear
     # Region = nfiareas[ID==r_no, Region]
-    initPrebas = create_prebas_input.f(clim, data.sample, nYears = nYears1,
+    initPrebas = create_prebas_input.f(clim, data.sample, nYears = nYears1, 
                                        startingYear = startingYear,domSPrun=domSPrun)
     
     print("model initialized")

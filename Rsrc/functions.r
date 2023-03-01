@@ -547,17 +547,14 @@ pSTx <- function(segIDx,nSample,year1,year2,tileX){
 
 
 ###function for structural variables data assimilation 
-pSVDA <- function(segIDx,nSample,year1,year2,tileX){
-  mu1 <- errData[[paste0("y",year1)]][[paste0("t",tileX)]]$muFSVda
-  if(is.null(mu1)) mu1 <- errData[[paste0("y",year1)]]$all$muFSVda
-  sigma1 <- errData[[paste0("y",year1)]][[paste0("t",tileX)]]$sigmaFSVda
-  if(is.null(sigma1)) sigma1 <- errData[[paste0("y",year1)]]$all$sigmaFSVda
-  mu2 <- errData[[paste0("y",year2)]][[paste0("t",tileX)]]$muFSVda
-  if(is.null(mu2)) mu2 <- errData[[paste0("y",year2)]]$all$muFSVda
-  if(is.null(mu2)) mu2 <- mu1
-  sigma2 <- errData[[paste0("y",year2)]][[paste0("t",tileX)]]$sigmaFSVda
-  if(is.null(sigma2)) sigma2 <- errData[[paste0("y",year2)]]$all$sigmaFSVda
-  if(is.null(sigma2)) sigma2 <- sigma1
+pSVDA <- function(segIDx,nSample,
+                  errData1,errData2,
+                  step.modelHx,step.modelDx,step.modelBx,
+                  step.modelBconifx,step.modelBblx){
+  mu1 <- errData1$muFSVda
+  sigma1 <- errData1$sigmaFSVda
+  mu2 <- errData2$muFSVda
+  sigma2 <- errData2$sigmaFSVda
   
   #pST <- c(segIDx$pST1,segIDx$pST2,segIDx$pST3,segIDx$pST4,segIDx$pST5)
   pST <- c(0.1,0.25,0.3,0.25,0.1)
@@ -630,12 +627,12 @@ pSVDA <- function(segIDx,nSample,year1,year2,tileX){
   
   # full.model<-lm(lnVmod~H+D+lnBAp+lnBAsp+lnBAb+st,data=dataX)
   sampleX$st <- factor(sampleX$st)
-  sampleX[,Hx := pmax(0.,predict(step.modelH,newdata=sampleX))]
-  sampleX[,Dx := pmax(0.,predict(step.modelD,newdata=sampleX))]
-  sampleX[,Bx := pmax(0.,predict(step.modelB,newdata=sampleX))]
+  sampleX[,Hx := pmax(0.,predict(step.modelHx,newdata=sampleX))]
+  sampleX[,Dx := pmax(0.,predict(step.modelDx,newdata=sampleX))]
+  sampleX[,Bx := pmax(0.,predict(step.modelBx,newdata=sampleX))]
   # sampleX[,Vx := pmax(0.,predict(step.modelV,newdata=sampleX))]
-  sampleX[,Bconifx := pmax(0.,predict(step.modelBconif,newdata=sampleX))]
-  sampleX[,Bblx := pmax(0.,predict(step.modelBbl,newdata=sampleX))]
+  sampleX[,Bconifx := pmax(0.,predict(step.modelBconifx,newdata=sampleX))]
+  sampleX[,Bblx := pmax(0.,predict(step.modelBblx,newdata=sampleX))]
   sampleX[,BconifPerx := Bconifx/(Bconifx+Bblx)*100]
   sampleX[,BblPerx := Bblx/(Bconifx+Bblx)*100]
   # sampleX[,rootBAp:=BAp^0.5]

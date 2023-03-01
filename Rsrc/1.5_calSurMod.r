@@ -70,12 +70,13 @@ load(paste0(procDataPath,"init",startingYear,"/DA",year2,"/samples.rdata"))
     # change nYears
     nYears1=year2-startingYear
     # Region = nfiareas[ID==r_no, Region]
-    initPrebas = create_prebas_input.f(clim, data.sample, nYears = nYears1, 
-                                       startingYear = startingYear,domSPrun=domSPrun)
+    initPrebas = create_prebas_input.f(clim, data.sample=data.sample, nYears = nYears1, 
+                                       startSim = startingYear,domSPrun=domSPrun)
     
+    ###reset names
+    setnames(data.sample,c("ba","bl","dbh","h","conif"),paste0(c("ba","bl","dbh","h","conif"),startingYear))
     print("model initialized")
 
-    
     ###run Model
     out <- multiPrebas(initPrebas)$multiOut
     Vx <- rowSums(out[,yearX,30,,1])
@@ -91,7 +92,6 @@ load(paste0(procDataPath,"init",startingYear,"/DA",year2,"/samples.rdata"))
                         H3 = Hx, D3 = Dx,
                         Bcon3=Bconx,Bbl3=Bblx)
     print("runs completed")
-    
     
     
     ####build surrogate model
@@ -250,22 +250,22 @@ load(paste0(procDataPath,"init",startingYear,"/DA",year2,"/samples.rdata"))
     dataX[,rootBAconif:=BAconif^0.5]
     dataX[,BAconif2:=BAconif^(2)]
     full.modelV <-lm(Vmod~H+D+SDI+BAh+BAconif+BAbl+st,data=dataX)
-    step.modelV <- stepAIC(full.modelV, direction = "both",
+    step.modelV2 <- stepAIC(full.modelV, direction = "both",
                            trace = FALSE)
     full.modelB <-lm(Bmod~H+D+SDI+BAh+BAconif+BAbl+st,data=dataX)
-    step.modelB <- stepAIC(full.modelB, direction = "both",
+    step.modelB2 <- stepAIC(full.modelB, direction = "both",
                            trace = FALSE)
     full.modelH <-lm(Hmod~H+D+SDI+BAconif+BAbl+st,data=dataX)
-    step.modelH <- stepAIC(full.modelH, direction = "both",
+    step.modelH2 <- stepAIC(full.modelH, direction = "both",
                            trace = FALSE)
     full.modelD <-lm(Dmod~H+D+SDI+BAh+BAconif+BAbl+st,data=dataX)
-    step.modelD <- stepAIC(full.modelD, direction = "both",
+    step.modelD2 <- stepAIC(full.modelD, direction = "both",
                            trace = FALSE)
     full.modelBconif <-lm(BAconifmod~H+D+SDI+BAh+BAconif+BAbl+st+rootBAconif,data=dataX)
-    step.modelBconif <- stepAIC(full.modelBconif, direction = "both",
+    step.modelBconif2 <- stepAIC(full.modelBconif, direction = "both",
                                 trace = FALSE)
     full.modelBbl <-lm(BAblmod~H+D+SDI+BAh+BAconif+BAbl+st,data=dataX)
-    step.modelBbl <- stepAIC(full.modelBbl, direction = "both",
+    step.modelBbl2 <- stepAIC(full.modelBbl, direction = "both",
                              trace = FALSE)
     # start<-as.vector(full.model$coefficients)
     ### Anonther option is to use nonlinear regression, which differed in error assumption. 
@@ -291,23 +291,23 @@ load(paste0(procDataPath,"init",startingYear,"/DA",year2,"/samples.rdata"))
     #                                  i5=start[12]
     #                                  ))
     #     
-    plot(step.modelV$fitted.values,dataX$Vmod,pch=".",col=2)
+    plot(step.modelV2$fitted.values,dataX$Vmod,pch=".",col=2)
     abline(0,1)
-    plot(step.modelB$fitted.values,dataX$Bmod,pch=".",col=2)
+    plot(step.modelB2$fitted.values,dataX$Bmod,pch=".",col=2)
     abline(0,1)
-    plot(step.modelH$fitted.values,dataX$Hmod,pch=".",col=2)
+    plot(step.modelH2$fitted.values,dataX$Hmod,pch=".",col=2)
     abline(0,1)
-    plot(step.modelD$fitted.values,dataX$Dmod,pch=".",col=2)
+    plot(step.modelD2$fitted.values,dataX$Dmod,pch=".",col=2)
     abline(0,1)
-    plot(step.modelBconif$fitted.values,dataX$BAconifmod,pch=".",col=2)
+    plot(step.modelBconif2$fitted.values,dataX$BAconifmod,pch=".",col=2)
     abline(0,1)
-    plot(step.modelBbl$fitted.values,dataX$BAblmod,pch=".",col=2)
+    plot(step.modelBbl2$fitted.values,dataX$BAblmod,pch=".",col=2)
     abline(0,1)
     
     # summary(nonlinear)
     # summary(step.model)
-    save(step.modelV,step.modelB,step.modelD,step.modelH,
-         step.modelBconif,step.modelBbl,
-         file="surErrMods/surMod_Step1.rdata") ###needs to be changed update name
+    save(step.modelV2,step.modelB2,step.modelD2,step.modelH2,
+         step.modelBconif2,step.modelBbl2,
+         file="surErrMods/surMod_Step2.rdata") ###needs to be changed update name
     
     

@@ -41,7 +41,8 @@ load(url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/data/i
 # load(url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/data/logisticPureF.rdata"))
 # load(url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/data/step.probit.rdata"))
 ###load surrMods !!!change name
-load("surErrMods/surMod.rdata")
+load("surErrMods/surMod_Step1.rdata")
+load("surErrMods/surMod_Step2.rdata")
 
 uniqueData[,BAconif2015:= (ba2015 * conif2015/(conif2015+bl2015))]
 uniqueData[,BAbl2015:= (ba2015 * bl2015/(conif2015+bl2015))]

@@ -1,10 +1,12 @@
 # Run settings 
 library(devtools)
-source_url("https://raw.githubusercontent.com/ForModLabUHel/satRuns/master/Rsrc/settings.r")
+source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc/settings.r")
+setwd(generalPath)
 if(file.exists("localSettings.r")) {source("localSettings.r")} # use settings file from local directory if one exists
+setwd(generalPath)
 
 # Run functions 
-source_url("https://raw.githubusercontent.com/ForModLabUHel/satRuns/master/Rsrc/functions.r")
+source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc/functions.r")
 
 
 ###check and create output directories
@@ -12,7 +14,6 @@ mkfldr <- paste0(procDataPath,"init",startingYear,"/calST_split/")
 if(!dir.exists(file.path(mkfldr))){
   dir.create(file.path(mkfldr), recursive = TRUE)
 }
-setwd(generalPath)
 
 yearX <- 3
 nSample = 1000 ###number of samples from the error distribution
@@ -29,9 +30,9 @@ if (splitRun) {
 }
 
 ####load error models
-load(url("https://raw.githubusercontent.com/ForModLabUHel/satRuns/master/data/inputUncer.rdata"))
-load(url("https://raw.githubusercontent.com/ForModLabUHel/satRuns/master/data/logisticPureF.rdata"))
-load(url("https://raw.githubusercontent.com/ForModLabUHel/satRuns/master/data/step.probit.rdata"))
+load(url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/data/inputUncer.rdata"))
+load(url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/data/logisticPureF.rdata"))
+load(url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/data/step.probit.rdata"))
 ###load surrMods  ###change name
 load("surErrMods/surMod.rdata")
 

@@ -230,9 +230,9 @@ data.all[,dD2 := (dbh2021-dbh2018)/(yearEnd - year2)]
 
 ###not grupping
 ###group pixels by same values
-data.all[, segID := .GRP, by = .(ba2015, bl2015,dbh2015, h2015, conif2015,siteType2015,climID,
-                                 ba2018, bl2018,dbh2018, h2018, conif2018,siteType2018,
-                                 ba2021, bl2021,dbh2021, h2021, conif2021,siteType2021)]
+data.all[, segID := .GRP, by = .(ba2015, bl2015,dbh2015, h2015, conif2015,siteType2015,v2015,climID,
+                                 ba2018, bl2018,dbh2018, h2018, conif2018,siteType2018,v2018,
+                                 ba2021, bl2021,dbh2021, h2021, conif2021,siteType2021,v2021)]
 
 ####Count segID pix
 data.all[, npix:=.N, segID]
@@ -240,9 +240,9 @@ data.all[, npix:=.N, segID]
 # uniqueData <- data.table()
 ####find unique initial conditions
 uniqueData <- unique(data.all[,.(segID,npix,climID,
-                                         ba2015, bl2015,dbh2015, h2015, conif2015,siteType2015,
-                                         ba2018, bl2018,dbh2018, h2018, conif2018,siteType2018,
-                                         ba2021, bl2021,dbh2021, h2021, conif2021,siteType2021
+                           ba2015, bl2015,dbh2015, h2015, conif2015,siteType2015,v2015,
+                           ba2018, bl2018,dbh2018, h2018, conif2018,siteType2018,v2018,
+                           ba2021, bl2021,dbh2021, h2021, conif2021,siteType2021,v2021
                                          )])
 
 uniqueData[,uniqueKey:=1:nrow(uniqueData)]

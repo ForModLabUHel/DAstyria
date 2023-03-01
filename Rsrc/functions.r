@@ -1,7 +1,7 @@
 
 ####function to initialize the model
 create_prebas_input.f = function(clim, data.sample, nYears, pX=pCROB,
-                                 startingYear=0,domSPrun=0,nLayers=2) { # dat = climscendataset
+                                 startSim=0,domSPrun=0,nLayers=2) { # dat = climscendataset
   #domSPrun=0 initialize model for mixed forests according to data inputs 
   #domSPrun=1 initialize model only for dominant species 
   nSites <- nrow(data.sample)
@@ -24,9 +24,9 @@ create_prebas_input.f = function(clim, data.sample, nYears, pX=pCROB,
   ###Initialise model
   # initVardension nSites,variables, nLayers
   # variables: 1 = species; 2 = Age; 3 = H; 4=dbh; 5 = ba; 6 = Hc
-  setnames(data.sample,c(paste0("ba",startingYear),paste0("h",startingYear),
-                         paste0("dbh",startingYear),paste0("bl",startingYear),
-                         paste0("conif",startingYear)),
+  setnames(data.sample,c(paste0("ba",startSim),paste0("h",startSim),
+                         paste0("dbh",startSim),paste0("bl",startSim),
+                         paste0("conif",startSim)),
            c("ba","h","dbh","bl","conif"))
   initVar <- array(NA, dim=c(nSites,7,nLayers))
   data.sample[,baConif:= (ba * conif/(conif+bl))]
@@ -157,7 +157,7 @@ create_prebas_input.f = function(clim, data.sample, nYears, pX=pCROB,
   #     # dat[, pvm:= as.Date('1980-01-01') - 1 + rday ]
   #     # dat[, DOY:= as.numeric(format(pvm, "%j"))]
   #     dat[, Year:= as.numeric(floor(rday/366)+1971)]
-  #     dat = dat[Year >= startingYear]
+  #     dat = dat[Year >= startSim]
   #     dat[DOY==366, DOY:=365]
   #   }
   #   PARtran = t( dcast(dat[, list(climID, rday, PAR)], rday ~ climID,
@@ -554,10 +554,13 @@ pSVDA <- function(segIDx,nSample,year1,year2,tileX){
   if(is.null(sigma1)) sigma1 <- errData[[paste0("y",year1)]]$all$sigmaFSVda
   mu2 <- errData[[paste0("y",year2)]][[paste0("t",tileX)]]$muFSVda
   if(is.null(mu2)) mu2 <- errData[[paste0("y",year2)]]$all$muFSVda
+  if(is.null(mu2)) mu2 <- mu1
   sigma2 <- errData[[paste0("y",year2)]][[paste0("t",tileX)]]$sigmaFSVda
   if(is.null(sigma2)) sigma2 <- errData[[paste0("y",year2)]]$all$sigmaFSVda
+  if(is.null(sigma2)) sigma2 <- sigma1
   
-  pST <- c(segIDx$pST1,segIDx$pST2,segIDx$pST3,segIDx$pST4,segIDx$pST5)
+  #pST <- c(segIDx$pST1,segIDx$pST2,segIDx$pST3,segIDx$pST4,segIDx$pST5)
+  pST <- c(0.1,0.25,0.3,0.25,0.1)
   st <- sample(rep(1:5,round(nSample*pST)),nSample,replace = T)
   set.seed(1234)
   sampleError <- data.table(mvrnorm(nSample,mu=mu1,Sigma=sigma1))
@@ -567,42 +570,41 @@ pSVDA <- function(segIDx,nSample,year1,year2,tileX){
   sampleX$H <- segIDx$H + sampleError$H
   sampleX$D <- segIDx$D + sampleError$D
   sampleX$BAtot <- segIDx$BAtot + sampleError$G
-  sampleX$BApPer <- segIDx$BApPer + sampleError$BAp
-  sampleX$BAspPer <- segIDx$BAspPer + sampleError$BAsp
-  sampleX$BAbPer <- segIDx$BAbPer + sampleError$BAb
-  sampleX$BAp <- segIDx$BApPer * sampleX$BAtot/100
-  sampleX$BAsp <- segIDx$BAspPer * sampleX$BAtot/100
-  sampleX$BAb <- segIDx$BAbPer * sampleX$BAtot/100
+  sampleX$BAconifPer <- segIDx$BAconifPer + sampleError$BAcon
+  sampleX$BAblPer <- segIDx$BAblPer + sampleError$BAbl
+  sampleX$BAconif <- segIDx$BAconifPer * sampleX$BAtot/100
+  sampleX$BAbl <- segIDx$BAblPer * sampleX$BAtot/100
   
   
   ###filter data
   minH <- 1.5; minD <- 0.5; minB <- pi*(minD/2)^2/10000*2200
   xx <- unique(c(which(sampleX$H< minH),which(sampleX$D< minD),which(sampleX$BAtot< minB)))
 
-  sampleX[, c("BApPer", "BAspPer", "BAbPer"):=
-            as.list(fixBAper(unlist(.(BApPer,BAspPer,BAbPer)))), 
+  sampleX[, c("BAconifPer", "BAblPer"):=
+            as.list(fixBAper(unlist(.(BAconifPer,BAblPer)))), 
           by = seq_len(nrow(sampleX))]
   
-  max.pro.est<-apply(segIDx[, c('BApPer','BAspPer','BAbPer')], 1, which.max)
-  segIDx$max.pro.est=max.pro.est
+  ###process pure forests!!!to check start
+  # max.pro.est<-apply(segIDx[, c('BAconifPer','BAblPer')], 1, which.max)
+  # segIDx$max.pro.est=max.pro.est
+  # 
+  # if(year1=="all" & tileX=="all"){
+  #   logistic.model <- logisticPureF$all
+  # }else{
+  #   logistic.model <- logisticPureF[[paste0("y",year1)]][[paste0("t",tileX)]]
+  #   # if(is.null(logistic.model)) logistic.model<- logisticPureF[[paste0("y",year1)]]$all
+  #   if(is.null(logistic.model)) logistic.model<- logisticPureF$all
+  # }
+  # 
+  # set.seed(1234)
+  # sampleX$pureF <- runif(min(nSample,nrow(sampleX)),0,1)<predict(logistic.model,type="response",newdata = segIDx)
+  # if(max.pro.est==1) sampleX[which(pureF),c("BApPer","BAspPer","BAbPer"):=list(100,0,0)]
+  # if(max.pro.est==2) sampleX[which(pureF),c("BApPer","BAspPer","BAbPer"):=list(0,100,0)]
+  # if(max.pro.est==3) sampleX[which(pureF),c("BApPer","BAspPer","BAbPer"):=list(0,0,100)]
+  ###process pure forests!!!to check start
   
-  if(year1=="all" & tileX=="all"){
-    logistic.model <- logisticPureF$all
-  }else{
-    logistic.model <- logisticPureF[[paste0("y",year1)]][[paste0("t",tileX)]]
-    # if(is.null(logistic.model)) logistic.model<- logisticPureF[[paste0("y",year1)]]$all
-    if(is.null(logistic.model)) logistic.model<- logisticPureF$all
-  }
-
-  set.seed(1234)
-  sampleX$pureF <- runif(min(nSample,nrow(sampleX)),0,1)<predict(logistic.model,type="response",newdata = segIDx)
-  if(max.pro.est==1) sampleX[which(pureF),c("BApPer","BAspPer","BAbPer"):=list(100,0,0)]
-  if(max.pro.est==2) sampleX[which(pureF),c("BApPer","BAspPer","BAbPer"):=list(0,100,0)]
-  if(max.pro.est==3) sampleX[which(pureF),c("BApPer","BAspPer","BAbPer"):=list(0,0,100)]
-  
-  sampleX[,BAp:=BApPer*BAtot/100]
-  sampleX[,BAsp:=BAspPer*BAtot/100]
-  sampleX[,BAb:=BAbPer*BAtot/100]
+  sampleX[,BAconif:=BAconifPer*BAtot/100]
+  sampleX[,BAbl:=BAblPer*BAtot/100]
   # sampleX[,st:=segIDx$st]
   sampleX[,V2:=segIDx$V2]
   sampleX[,ba2:=segIDx$ba2]
@@ -616,16 +618,15 @@ pSVDA <- function(segIDx,nSample,year1,year2,tileX){
   # sampleX$lnVmod<-log(sampleX$Vmod)
   # sampleX$st<-factor(sampleX$st,levels = 1:5)     ##!!!!Xianglin
   # sampleX$st <- factor(sampleX$st)
-  sampleX[,BAtot:=(BAp+BAsp+BAb)]
+  sampleX[,BAtot:=(BAconif+BAbl)]
   sampleX[,BAh:=BAtot*H]
   sampleX[,N:=BAtot/(pi*(D/200)^2)]
   b = -1.605 ###coefficient of Reineke
   sampleX[,SDI:=N *(D/10)^b]
   sampleX$st <- st
-  sampleX[,rootBAp:=BAp^0.5]
-  sampleX[,BAp2:=ba2*BApPer/100]
-  sampleX[,BAsp2:=ba2*BAspPer/100]
-  sampleX[,BAb2:=ba2*BAbPer/100]
+  sampleX[,rootBAconif:=BAconif^0.5]
+  sampleX[,BAconif2:=ba2*BAconifPer/100]
+  sampleX[,BAbl2:=ba2*BAblPer/100]
   
   # full.model<-lm(lnVmod~H+D+lnBAp+lnBAsp+lnBAb+st,data=dataX)
   sampleX$st <- factor(sampleX$st)
@@ -633,36 +634,35 @@ pSVDA <- function(segIDx,nSample,year1,year2,tileX){
   sampleX[,Dx := pmax(0.,predict(step.modelD,newdata=sampleX))]
   sampleX[,Bx := pmax(0.,predict(step.modelB,newdata=sampleX))]
   # sampleX[,Vx := pmax(0.,predict(step.modelV,newdata=sampleX))]
-  sampleX[,Bpx := pmax(0.,predict(step.modelBp,newdata=sampleX))]
-  sampleX[,Bspx := pmax(0.,predict(step.modelBsp,newdata=sampleX))]
-  sampleX[,Bdx := pmax(0.,predict(step.modelBd,newdata=sampleX))]
-  sampleX[,BpPerx := Bpx/(Bpx+Bspx+Bdx)*100]
-  sampleX[,BspPerx := Bspx/(Bpx+Bspx+Bdx)*100]
-  sampleX[,BdPerx := Bdx/(Bpx+Bspx+Bdx)*100]
+  sampleX[,Bconifx := pmax(0.,predict(step.modelBconif,newdata=sampleX))]
+  sampleX[,Bblx := pmax(0.,predict(step.modelBbl,newdata=sampleX))]
+  sampleX[,BconifPerx := Bconifx/(Bconifx+Bblx)*100]
+  sampleX[,BblPerx := Bblx/(Bconifx+Bblx)*100]
   # sampleX[,rootBAp:=BAp^0.5]
   
-  ###estimates for negative values based on average growth  
-  dH <- mean(sampleX[-xx]$Hx - sampleX[-xx]$H,na.rm=T)
-  dD <- mean(sampleX[-xx]$Dx - sampleX[-xx]$D,na.rm=T)
-  dB <- mean(sampleX[-xx]$Bx - sampleX[-xx]$BAtot,na.rm=T)
-  sampleX[xx]$Hx <- sampleX[xx]$H + dH
-  sampleX[xx]$Dx <- sampleX[xx]$D + dD
-  sampleX[xx]$Bx <- sampleX[xx]$BAtot + dB
-  sampleX[xx]$BpPerx <- sampleX[xx]$BApPer
-  sampleX[xx]$BspPerx <- sampleX[xx]$BAspPer
-  sampleX[xx]$BdPerx <- sampleX[xx]$BAbPer
+  if(length(xx)>0){
+    ###estimates for negative values based on average growth  
+    dH <- mean(sampleX[-xx]$Hx - sampleX[-xx]$H,na.rm=T)
+    dD <- mean(sampleX[-xx]$Dx - sampleX[-xx]$D,na.rm=T)
+    dB <- mean(sampleX[-xx]$Bx - sampleX[-xx]$BAtot,na.rm=T)
+    sampleX[xx]$Hx <- sampleX[xx]$H + dH
+    sampleX[xx]$Dx <- sampleX[xx]$D + dD
+    sampleX[xx]$Bx <- sampleX[xx]$BAtot + dB
+    sampleX[xx]$BconifPerx <- sampleX[xx]$BAconifPer
+    sampleX[xx]$BblPerx <- sampleX[xx]$BAblPer
+  }
   
-  nax <- unique(which(is.na(sampleX[,.(Hx,Dx,Bx,BpPerx,BspPerx,BdPerx)]),arr.ind = T)[,1])
+  nax <- unique(which(is.na(sampleX[,.(Hx,Dx,Bx,BconifPerx,BblPerx)]),arr.ind = T)[,1])
   if(length(nax)>0) sampleX <- sampleX[-nax]
-  mux <- sampleX[,colMeans(cbind(Hx,Dx,Bx,BpPerx,BspPerx,BdPerx))]
-  sigmax <- sampleX[,cov(cbind(Hx,Dx,Bx,BpPerx,BspPerx,BdPerx))]
+  mux <- sampleX[,colMeans(cbind(Hx,Dx,Bx,BconifPerx,BblPerx))]
+  sigmax <- sampleX[,cov(cbind(Hx,Dx,Bx,BconifPerx,BblPerx))]
   
   pMvnormx <- c(mux,as.vector(sigmax))
   
   ###sample from second measurement
   mux2 <- c(segIDx$h2 + mu2[3],segIDx$dbh2 + mu2[2],segIDx$BAtot2 + mu2[1],
-            segIDx$BApPer2 + mu2[4],segIDx$BAspPer2 + mu2[5],segIDx$BAbPer2 + mu2[6])
-  sigmax2 <- sigma2[c(3,2,1,4:6),c(3,2,1,4:6)]
+            segIDx$BAconifPer2 + mu2[4],segIDx$BAblPer2 + mu2[5])
+  sigmax2 <- sigma2[c(3,2,1,4,5),c(3,2,1,4,5)]
   
   pMvnormx2 <- c(mux2,as.vector(sigmax2))
   

@@ -54,10 +54,11 @@ uniqueData[,BAbl2021:= (ba2021 * bl2021/(conif2021+bl2021))]
 dataSurMod <- uniqueData[,.(segID,h2015,dbh2015,BAconif2015,BAbl2015,siteType2015,
                             siteType2018,v2018,ba2018,h2018,dbh2018,
                             BAconif2018,BAbl2018,
-                            h2021,dbh2021,BAconif2021,BAbl2021,siteType2021)] 
+                            v2021,ba2021,h2021,dbh2021,
+                            BAconif2021,BAbl2021,siteType2021)] 
 setnames(dataSurMod,c("segID","H","D","BAconif","BAbl","st1",
                       "st2","V2","ba2","h2","dbh2",
-                      "BAconif2","BAbl2",
+                      "BAconif2","BAbl2", "v3","ba3",
                       "h3","dbh3","BAconif3","BAbl3","st3"))
 
 
@@ -109,9 +110,43 @@ if(parallelRun){
     # }
   # })
 
-  system.time({
-   pMvNorm <- dataSurMod[, pSVDA(.SD,nSample = nSample,year1=startingYear,
-                                year2=year2,tileX=NULL), by = segID]
+  system.time({ # SERIAL PROCESSING
+   for(i in 1:1000){
+  
+   errData1 <- errData$y2015$all
+   errData2 <- errData$y2015$all
+   nX <- i
+   kk <- pSVDA(dataSurMod[nX],nSample,
+                     errData1,errData2,
+                     step.modelHx=step.modelH,step.modelDx=step.modelD,
+                     step.modelBx=step.modelB,
+                     step.modelBconifx=step.modelBconif,
+                     step.modelBblx=step.modelBbl)
+   }
+  })
+   xx <- dataSurMod[nX]
+   xx$H <- kk$muPost[1]
+   xx$D <- kk$muPost[2]
+   xx$BAconif <- kk$muPost[3]*kk$muPost[4]/100
+   xx$BAbl <- kk$muPost[3]*kk$muPost[5]/100
+   xx$st2 <- xx$st3
+   xx$ba2 <- xx$ba3
+   xx$h2 <- xx$h3
+   xx$dbh2 <- xx$dbh3
+   xx$BAconif2 <- xx$BAconif3
+   xx$BAbl2 <- xx$BAbl3
+   xx$BAconifPer2 <- xx$BAconifPer3
+   xx$BAblPer2 <- xx$BAblPer3
+   xx$BAtot2 <- xx$BAtot3
+   errData1$sigmaFSVda <- kk$sigPost
+   
+   kk2 <- pSVDA(xx,nSample,
+               errData1,errData2,
+               step.modelHx=step.modelH,step.modelDx=step.modelD,
+               step.modelBx=step.modelB,
+               step.modelBconifx=step.modelBconif,
+               step.modelBblx=step.modelBbl)
+   
   })
 }
 

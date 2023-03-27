@@ -560,23 +560,48 @@ pSVDA <- function(segIDx,nSample,
   pST <- c(0.1,0.25,0.3,0.25,0.1)
   st <- sample(rep(1:5,round(nSample*pST)),nSample,replace = T)
   set.seed(1234)
-  sampleError <- data.table(mvrnorm(nSample,mu=mu1,Sigma=sigma1))
   
-  # segIDx <- dataSurV[segID==2]
-  sampleX <- data.table()
-  sampleX$H <- segIDx$H + sampleError$H
-  sampleX$D <- segIDx$D + sampleError$D
-  sampleX$BAtot <- segIDx$BAtot + sampleError$G
-  sampleX$BAconifPer <- segIDx$BAconifPer + sampleError$BAcon
-  sampleX$BAblPer <- segIDx$BAblPer + sampleError$BAbl
-  sampleX$BAconif <- segIDx$BAconifPer * sampleX$BAtot/100
-  sampleX$BAbl <- segIDx$BAblPer * sampleX$BAtot/100
+  muX <- mu1 + c(segIDx$BAtot, segIDx$D,segIDx$H,segIDx$BAconifPer,segIDx$BAblPer)
+  if(any(muX<0)) muX[which(muX<0)] <- 1
+  abc<-Fweibull.v(muX,diag(sigma1))
+  shd<-data.frame(shape=abc$c,decay=abc$b^(-abc$c))
+  rho<-cov2cor(sigma1)
+  sampleX <- data.table(rmvweisd(nSample*10, shd$shape, shd$decay, rho))
+  colnames(sampleX)<-c('BAtot','D','H','BAconifPer','BAblPer')
   
+###filter data
+  
+  sampleX <- sampleX[H>1.5]
+  sampleX <- sampleX[D>0.5]
+  sampleX <- sampleX[BAtot>0.045]
+  sampleX <- sampleX[H<35]
+  sampleX <- sampleX[D<40]
+  sampleX <- sampleX[BAtot<100]
+  sampleX <- sampleX[BAconifPer<100]
+  sampleX <- sampleX[BAblPer<100]
+  sampleX <- sampleX[BAconifPer>0]
+  sampleX <- sampleX[BAblPer>0]
+  sampleX <- sampleX[1:nSample]
+  sampleX$st <- st
+  
+  # sampleError <- data.table(mvrnorm(nSample,mu=mu1,Sigma=sigma1))
+  
+  # # segIDx <- dataSurV[segID==2]
+  # sampleX <- data.table()
+  # sampleX$H <- segIDx$H + sampleError$H
+  # sampleX$D <- segIDx$D + sampleError$D
+  # sampleX$BAtot <- segIDx$BAtot + sampleError$G
+  # sampleX$BAconifPer <- segIDx$BAconifPer + sampleError$BAcon
+  # sampleX$BAblPer <- segIDx$BAblPer + sampleError$BAbl
+  # sampleX$BAconif <- segIDx$BAconifPer * sampleX$BAtot/100
+  # sampleX$BAbl <- segIDx$BAblPer * sampleX$BAtot/100
+  # 
   
   ###filter data
-  minH <- 1.5; minD <- 0.5; minB <- pi*(minD/2)^2/10000*2200
-  xx <- unique(c(which(sampleX$H< minH),which(sampleX$D< minD),which(sampleX$BAtot< minB)))
+  # minH <- 1.5; minD <- 0.5; minB <- pi*(minD/2)^2/10000*2200
+  # xx <- unique(c(which(sampleX$H< minH),which(sampleX$D< minD),which(sampleX$BAtot< minB)))
 
+# to Check
   sampleX[, c("BAconifPer", "BAblPer"):=
             as.list(fixBAper(unlist(.(BAconifPer,BAblPer)))), 
           by = seq_len(nrow(sampleX))]
@@ -637,17 +662,17 @@ pSVDA <- function(segIDx,nSample,
   sampleX[,BblPerx := Bblx/(Bconifx+Bblx)*100]
   # sampleX[,rootBAp:=BAp^0.5]
   
-  if(length(xx)>0){
-    ###estimates for negative values based on average growth  
-    dH <- mean(sampleX[-xx]$Hx - sampleX[-xx]$H,na.rm=T)
-    dD <- mean(sampleX[-xx]$Dx - sampleX[-xx]$D,na.rm=T)
-    dB <- mean(sampleX[-xx]$Bx - sampleX[-xx]$BAtot,na.rm=T)
-    sampleX[xx]$Hx <- sampleX[xx]$H + dH
-    sampleX[xx]$Dx <- sampleX[xx]$D + dD
-    sampleX[xx]$Bx <- sampleX[xx]$BAtot + dB
-    sampleX[xx]$BconifPerx <- sampleX[xx]$BAconifPer
-    sampleX[xx]$BblPerx <- sampleX[xx]$BAblPer
-  }
+  # if(length(xx)>0){
+  #   ###estimates for negative values based on average growth  
+  #   dH <- mean(sampleX[-xx]$Hx - sampleX[-xx]$H,na.rm=T)
+  #   dD <- mean(sampleX[-xx]$Dx - sampleX[-xx]$D,na.rm=T)
+  #   dB <- mean(sampleX[-xx]$Bx - sampleX[-xx]$BAtot,na.rm=T)
+  #   sampleX[xx]$Hx <- sampleX[xx]$H + dH
+  #   sampleX[xx]$Dx <- sampleX[xx]$D + dD
+  #   sampleX[xx]$Bx <- sampleX[xx]$BAtot + dB
+  #   sampleX[xx]$BconifPerx <- sampleX[xx]$BAconifPer
+  #   sampleX[xx]$BblPerx <- sampleX[xx]$BAblPer
+  # }
   
   nax <- unique(which(is.na(sampleX[,.(Hx,Dx,Bx,BconifPerx,BblPerx)]),arr.ind = T)[,1])
   if(length(nax)>0) sampleX <- sampleX[-nax]
@@ -802,3 +827,193 @@ prForUnc <- function(segIDx,nSample,yearUnc,tileX){
   pars <- as.vector(pMvnormx)
   return(pars)
 }
+
+
+
+
+####distribution function to correct the distribution
+distr_correction <- function(Y,Xtrue,Xdiscr=FALSE){
+  # y is the matrix of new sample - observations in lines, variables in columns
+  # x is the matrix of the measured values = truth
+  X <- Xtrue[sample(1:nrow(Xtrue),nrow(Xtrue),replace = TRUE),]
+  m <- ncol(X)
+  n <- nrow(X)
+  ny <- nrow(Y)
+  
+  # Create cdf for each marginal distr. and use it to generate 
+  # ny random variables from that distribution:
+  Ynew <- matrix(0,nrow=ny,ncol=m)
+  
+  # Do post-processing variable by variable
+  for(j in 1:m){
+    xu <- unique(X[,j]) # choose the unique values in sample
+    xu <- xu[order(xu)] # and sort them from smallest to biggest
+    # create empirical cdf:
+    cdf <- matrix(0,length(xu),1) # empty matrix
+    for(i in 1:length(xu)){
+      cdf[i] <- sum(X[,j] <= xu[i]) # count the sample values less than 
+      # given value,
+    }
+    cdf <- cdf/(n+1) # cdf goes from 0 to 1, here are the inner points
+    
+    r <- matrix(ny,1)
+    for(i in 1:nrow(Y)){
+      r[i] <- sum(Y[,j]<=Y[i,j])/ny # Define the eCDF of each observation 
+    }
+    # use discr. or cont. inverse cdf to generate new sample
+    if(Xdiscr[j] | length(Xdiscr)<m){ # discrete values 
+      #interp <- approx(c(0,cdf), c(xu,max(xu)+1), r, method = "constant", yleft = xu[1], 
+      #                 yright = xu[length(xu)], rule = 2:1)
+      interp <- approx(c(0,cdf,1), c(min(xu),xu,max(xu)+1), r, method = "constant", yleft = xu[1], 
+                       yright = xu[length(xu)], rule = 2:1)
+    } else { # continuous values 
+      #interp <- approx(c(0,cdf), c(xu,max(xu)+1), r, yleft = xu[1], 
+      #                 yright = xu[length(xu)], rule = 2:1)
+      interp <- approx(c(0,cdf,1), c(min(xu),xu,max(xu)*1.01), r, yleft = xu[1], 
+                       yright = xu[length(xu)], rule = 2:1)
+    }
+    Ynew[,j] <- interp$y
+  }
+  return(Ynew)
+}
+
+
+library(mvtnorm)
+#Function 1: random generation function of multivariate Weibull distribution
+rmvweisd <- function(n, shape=1, decay=1, corr=diag(length(shape)))
+{
+  ## extract parameters, do sanity checks, deal with univariate case
+  
+  if(!is.matrix(corr) || !isSymmetric(corr))
+    stop("'corr' must be a symmetric matrix")
+  D = ncol(corr)
+  
+  Ds = length(shape)
+  if(Ds > D)
+    warning("'shape' longer than width of 'corr', truncating to fit")
+  if(Ds != D)
+    shape = rep(shape, length.out=D)
+  
+  Dd = length(decay)
+  if(Dd > D)
+    warning("'decay' longer than width of 'corr', truncating to fit")
+  if(Dd != D)
+    decay = rep(decay, length.out=D)
+  
+  if(D == 1) rweisd(n, shape, decay)
+  
+  ## generate standard multivariate normal matrix, convert to CDF
+  Z = rmvnorm(n, mean=rep(0,dim(corr)[1]), sigma = corr)
+  cdf = pnorm(Z)
+  
+  ## convert to Weibull (WeiSD), return
+  sapply(1:D, function(d) qweisd(cdf[,d], shape[d], decay[d]))
+}
+
+# Here we use rmvnorm function from mvtnorm package directly
+# #Function 2: random generation function of multivariate normal distribtution
+# rmvnormal <- function(n, mean=NULL, cov=NULL)
+# {
+# 	## munge parameters PRN and deal with the simplest univariate case
+# 
+# 	if(is.null(mean))
+# 		if(is.null(cov))
+# 			return(rnorm(n))
+# 		else
+# 			mean = rep(0, nrow(cov))
+# 	else if (is.null(cov))
+# 		cov = diag(length(mean))
+# 
+# 	## gather statistics, do sanity checks
+# 
+# 	D = length(mean)
+# 	if (D != nrow(cov) || D != ncol(cov))
+# 		stop("length of mean must equal nrow and ncol of cov")
+# 
+# 	E = eigen(cov, symmetric=TRUE)
+# 	if (any(E$val < 0)){
+# 	  stop("Numerically negative definite covariance matrix")
+# 	  warning("Numerically negative definite covariance matrix")}
+# 
+# 	## generate values and return
+# 	mean.term = mean
+# 	covariance.term = E$vec %*% (t(E$vec) * sqrt(E$val))
+# 	independent.term = matrix(rnorm(n*D), nrow=D)
+# 
+# 	drop(t(mean.term + (covariance.term %*% independent.term)))
+# }
+
+#Function 3: quantile function of Weibull distribution
+qweisd <- function(p, shape, decay, lower.tail=TRUE, log.p=FALSE)
+  qweibull(p, shape=shape, scale=decay^(-1/shape),
+           lower.tail=lower.tail, log.p=log.p)
+
+
+Fweibull<-function(dm,pdvar){
+  
+  a=0
+  pdvar
+  
+  c = 0.1
+  c1 = c
+  g1 = gamma(1 + 1/c)
+  g2 = gamma(1 + 2/c)
+  # b = ((-a*g1)/g2) + ((((a/g2)**2)*(g2*g2-g1) + (dm*dm/g2))**0.5)
+  b = (dm-a)/g1
+  fOld = b*b * (g2 - g1**2) - pdvar
+  
+  c = c1 + 1
+  g1 = gamma(1 + 1/c)
+  g2 = gamma(1 + 2/c)
+  # b = ((-a*g1)/g2) + ((((a/g2)**2)*(g2*g2-g1) + (dm*dm/g2))**0.5)
+  b = (dm-a)/g1
+  fNew = b*b * (g2 - g1**2) - pdvar
+  fOld2 = fNew
+  
+  while (fOld*fNew > 0)
+  {
+    c1 = c
+    c = c1 + 1
+    g1 = gamma(1 + 1/c)
+    g2 = gamma(1 + 2/c)
+    # b = ((-a*g1)/g2) + ((((a/g2)**2)*(g2*g2-g1) + (dm*dm/g2))**0.5)
+    b = (dm-a)/g1
+    fNew = b*b * (g2 - g1**2) - pdvar
+    # print(fNew)
+  }
+  
+  inc = c - c1;
+  while (abs(fNew) > 1e-8)
+  {
+    inc = -fNew * inc / (fNew - fOld)
+    if(inc>1) inc=0.1
+    if(inc < (-1)) inc=-0.1
+    if((c + inc) >0) {c = c + inc} else {c=c/2}
+    fOld = fNew
+    g1 = gamma(1 + 1/c)
+    g2 = gamma(1 + 2/c)
+    # b = ((-a*g1)/g2) + ((((a/g2)**2)*(g2*g2-g1) + (dm*dm/g2))**0.5);
+    b = (dm-a)/g1
+    fNew =b*b * (g2 - g1**2) - pdvar
+    # print(fOld)
+    # print(fNew)
+    # print(c)
+  }
+  abc<-cbind(a,b,c)
+  abc
+}
+
+Fweibull.v<-function(dm,pdvar){
+  if (length(dm)==1){abc<-Fweibull(dm,pdvar)}
+  else{
+    n=length(dm)
+    abc<-data.frame(a=rep(NA,n),
+                    b=rep(NA,n),
+                    c=rep(NA,n))
+    for (i in 1:n) {
+      abc[i,]<-Fweibull(dm[i],pdvar[i])
+    }
+  }
+  return(abc)
+}
+

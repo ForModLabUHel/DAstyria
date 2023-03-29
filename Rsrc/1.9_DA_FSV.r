@@ -114,7 +114,7 @@ if(parallelRun){
    for(i in 1:1000){
   
    errDataX <- errData$y2015$all
-   postErr <- errData$muFSVda
+   postErr <- errDataX$muFSVda
    # errData2 <- errData$y2015$all
    nX <- i
    

@@ -45,7 +45,11 @@ if(!CSCrun){
 require(Rprebasso)
 
 ####indicate rasterPath and climID path
-generalPath <- "C:/Users/minunno/Documents/research/ForestCarbonMonitoring/FCM_CNN/data/Forest_Structure_layers/"
+if(CSCrun){
+  generalPath <- "/scratch/project_2000994/PREBASruns/FCMaustria/"
+}else{
+  generalPath <- "C:/Users/minunno/Documents/research/ForestCarbonMonitoring/FCM_CNN/data/Forest_Structure_layers/"
+}
 
 rasterPath <- generalPath
 

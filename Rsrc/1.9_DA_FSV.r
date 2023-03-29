@@ -113,22 +113,26 @@ if(parallelRun){
   system.time({ # SERIAL PROCESSING
    for(i in 1:1000){
   
-   errData1 <- errData$y2015$all
-   errData2 <- errData$y2015$all
+   errDataX <- errData$y2015$all
+   postErr <- errData$muFSVda
+   # errData2 <- errData$y2015$all
    nX <- i
-   kk <- pSVDA(dataSurMod[nX],nSample,
-                     errData1,errData2,
-                     step.modelHx=step.modelH,step.modelDx=step.modelD,
-                     step.modelBx=step.modelB,
-                     step.modelBconifx=step.modelBconif,
-                     step.modelBblx=step.modelBbl)
+   
+   kk <- pSVDA_2steps(segIDx=dataSurMod[nX],nSample,
+                      errDataX,errDataX,errDataX,
+                     postErr,
+                     step.modelH=step.modelH,step.modelD=step.modelD,
+                     step.modelB=step.modelB,
+                     step.modelBconif=step.modelBconif,
+                     step.modelBbl=step.modelBbl)
    }
   })
    xx <- dataSurMod[nX]
-   xx$H <- kk$muPost[1]
-   xx$D <- kk$muPost[2]
-   xx$BAconif <- kk$muPost[3]*kk$muPost[4]/100
-   xx$BAbl <- kk$muPost[3]*kk$muPost[5]/100
+   xx$H <- kk[61]
+   xx$D <- kk[62]
+   xx$BAtot <- kk[63]
+   xx$BAconif <- kk[63]*kk[64]/100
+   xx$BAbl <- kk[63]*kk[65]/100
    xx$st2 <- xx$st3
    xx$ba2 <- xx$ba3
    xx$h2 <- xx$h3
@@ -138,10 +142,11 @@ if(parallelRun){
    xx$BAconifPer2 <- xx$BAconifPer3
    xx$BAblPer2 <- xx$BAblPer3
    xx$BAtot2 <- xx$BAtot3
-   errData1$sigmaFSVda <- kk$sigPost
+   errDataX <- list(); errDataX$muFSVda <- errData2$muFSVda
+   errDataX$sigmaFSVda <- matrix(kk[66:90],5,5)
    
    kk2 <- pSVDA(xx,nSample,
-               errData1,errData2,
+               errDataX,errData2,
                step.modelHx=step.modelH,step.modelDx=step.modelD,
                step.modelBx=step.modelB,
                step.modelBconifx=step.modelBconif,

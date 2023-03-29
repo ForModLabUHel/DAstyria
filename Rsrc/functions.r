@@ -602,9 +602,9 @@ pSVDA <- function(segIDx,nSample,
   # xx <- unique(c(which(sampleX$H< minH),which(sampleX$D< minD),which(sampleX$BAtot< minB)))
 
 # to Check
-  sampleX[, c("BAconifPer", "BAblPer"):=
-            as.list(fixBAper(unlist(.(BAconifPer,BAblPer)))), 
-          by = seq_len(nrow(sampleX))]
+  # sampleX[, c("BAconifPer", "BAblPer"):=
+  #           as.list(fixBAper(unlist(.(BAconifPer,BAblPer)))), 
+  #         by = seq_len(nrow(sampleX))]
   
   ###process pure forests!!!to check start
   # max.pro.est<-apply(segIDx[, c('BAconifPer','BAblPer')], 1, which.max)
@@ -658,8 +658,8 @@ pSVDA <- function(segIDx,nSample,
   # sampleX[,Vx := pmax(0.,predict(step.modelV,newdata=sampleX))]
   sampleX[,Bconifx := pmax(0.,predict(step.modelBconifx,newdata=sampleX))]
   sampleX[,Bblx := pmax(0.,predict(step.modelBblx,newdata=sampleX))]
-  sampleX[,BconifPerx := Bconifx/(Bconifx+Bblx)*100]
-  sampleX[,BblPerx := Bblx/(Bconifx+Bblx)*100]
+  sampleX[,BconifPerx := Bconifx/Bx*100]
+  sampleX[,BblPerx := Bblx/(Bx)*100]
   # sampleX[,rootBAp:=BAp^0.5]
   
   # if(length(xx)>0){
@@ -1017,3 +1017,60 @@ Fweibull.v<-function(dm,pdvar){
   return(abc)
 }
 
+
+pSVDA_2steps <- function(segIDx,nSample,
+                         errData1,errData2,errData3, ###error data of the 3 satellite measurements
+                         errorPost, #bias error of posterior distribution to check ...
+                         step.modelH,step.modelD,step.modelB,  #regression models could be  specific for each period
+                         step.modelBconif,step.modelBbl,
+                         allData=F){
+  
+  kk <- pSVDA(segIDx,nSample,
+              errData1,errData2,
+              step.modelHx=step.modelH,step.modelDx=step.modelD,
+              step.modelBx=step.modelB,
+              step.modelBconifx=step.modelBconif,
+              step.modelBblx=step.modelBbl)
+  xx <-segIDx
+  xx$H <- kk[61]
+  xx$D <- kk[62]
+  xx$BAtot <- kk[63]
+  xx$BAconif <- kk[63]*kk[64]/100
+  xx$BAbl <- kk[63]*kk[65]/100
+  xx$st2 <- xx$st3
+  xx$ba2 <- xx$ba3
+  xx$h2 <- xx$h3
+  xx$dbh2 <- xx$dbh3
+  xx$BAconif2 <- xx$BAconif3
+  xx$BAbl2 <- xx$BAbl3
+  xx$BAconifPer2 <- xx$BAconifPer3
+  xx$BAblPer2 <- xx$BAblPer3
+  xx$BAtot2 <- xx$BAtot3
+  errDataX <- list(); errDataX$muFSVda <- errorPost ###this is used 
+  errDataX$sigmaFSVda <- matrix(round(kk[66:90],6),5,5)
+
+  kk2 <- pSVDA(xx,nSample,
+             errDataX,errData3,
+             step.modelHx=step.modelH,step.modelDx=step.modelD,
+             step.modelBx=step.modelB,
+             step.modelBconifx=step.modelBconif,
+             step.modelBblx=step.modelBbl)
+  if(allData){ #return the means and the varCov matrices in vector form
+    return(c(kk,kk2))
+  }else{
+    #return just the means and the standard deviations  
+    return(c(kk[1:5],#mean priort t2
+             kk[31:35],#mean likel t2
+             kk[61:65], #mean postt2
+             kk2[1:5],#mean prior t3
+             kk2[31:35],#mean likel t3
+             kk2[61:65],#mean post t3
+             sqrt(kk[seq(6,30,by=6)]),#sd priort t2
+             sqrt(kk[seq(36,60,by=6)]),#sd likel t2
+             sqrt(kk[seq(66,90,by=6)]), #sd postt2
+             sqrt(kk2[seq(6,30,by=6)]),#sd priort t3
+             sqrt(kk2[seq(36,60,by=6)]),#sd likel t3
+             sqrt(kk2[seq(66,90,by=6)]) #sd postt3
+    ))
+  } 
+}

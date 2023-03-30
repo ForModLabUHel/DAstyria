@@ -15,13 +15,13 @@ setwd(generalPath)
 if (splitRun) {
   # If output is set to be split to smaller parts (splitRun = TRUE), create separate
   # folder for the split data tables.
-  mkfldr_split <- "procData/DA/split"
+  mkfldr_split <- "procData/split"
   if(!dir.exists(file.path(generalPath, mkfldr_split))) {
     dir.create(file.path(generalPath, mkfldr_split), recursive = TRUE)
   }
 } 
 
-mkfldr <- "procData/DA/"
+mkfldr <- "procData"
 if(!dir.exists(file.path(generalPath, mkfldr))) {
   dir.create(file.path(generalPath, mkfldr), recursive = TRUE)
 }
@@ -309,13 +309,13 @@ if (splitRun) {
     uniqueDataSplit <- uniqueDataSplit[, split_id:=NULL]
     
     # Save split tables
-    save(uniqueDataSplit,file=paste0(generalPath,"procData/init/DA/split/uniqueData",i,".rdata"))  
+    save(uniqueDataSplit,file=paste0(generalPath,"procData/split/uniqueData",i,".rdata"))  
     
     rm(uniqueDataSplit)
   }
 }else{
-  save(data.all,file=paste0(generalPath,"procData/DA/allData.rdata"))         ### All data
-  save(uniqueData,file=paste0(generalPath,"procData/init/uniqueData.rdata"))    ### unique pixel combination to run in PREBAS
-  save(samples,file=paste0(generalPath,"procData/init/samples.rdata"))    ### unique pixel combination to run in PREBAS
-  save(XYsegID,segID,file=paste0(generalPath,"procData/init/XYsegID.rdata"))    ### Coordinates and segID of all pixels
+  save(data.all,file=paste0(generalPath,"procData/allData.rdata"))         ### All data
+  save(uniqueData,file=paste0(generalPath,"procData/uniqueData.rdata"))    ### unique pixel combination to run in PREBAS
+  save(samples,file=paste0(generalPath,"procData/samples.rdata"))    ### unique pixel combination to run in PREBAS
+  save(XYsegID,segID,file=paste0(generalPath,"procData/XYsegID.rdata"))    ### Coordinates and segID of all pixels
 }

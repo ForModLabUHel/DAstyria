@@ -12,22 +12,19 @@ setwd(generalPath)
 #   source("/scratch/project_2000994/PREBASruns/assessCarbon/Rsrc/mainSettings.r") # in CSC
 # }
 
-# Create folders for outputs.
 if (splitRun) {
   # If output is set to be split to smaller parts (splitRun = TRUE), create separate
   # folder for the split data tables.
-  mkfldr_split <- paste0("procData/",paste0("init",startingYear,"/DA",year2,"_split"))
+  mkfldr_split <- "DA/split"
   if(!dir.exists(file.path(generalPath, mkfldr_split))) {
     dir.create(file.path(generalPath, mkfldr_split), recursive = TRUE)
   }
 } 
-  
-mkfldr <- paste0("procData/",paste0("init",startingYear,"/DA",year2))
+
+mkfldr <- "DA/"
 if(!dir.exists(file.path(generalPath, mkfldr))) {
   dir.create(file.path(generalPath, mkfldr), recursive = TRUE)
 }
-
-
 
 ###extract CurrClim IDs
 rastRef <- raster(baRast2015)
@@ -201,7 +198,6 @@ data.all[tooDens,dbh2021:=initDBH]
 data.all[tooDens,N2021:=initN]
 
 
-
 data.all[conif2015 == 0 & bl2015 == 0 & siteType2015 ==1, bl2015:=1]
 data.all[conif2018 == 0 & bl2018 == 0 & siteType2018 ==1, bl2018:=1]
 data.all[conif2021 == 0 & bl2021 == 0 & siteType2021 ==1, bl2021:=1]
@@ -284,42 +280,42 @@ for(i in 1:nSamples){
   segID <- c(segID,sampleX$segID)
 }
 
-save(data.all,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"/allData.rdata"))         ### All data
-save(uniqueData,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"/uniqueData.rdata"))    ### unique pixel combination to run in PREBAS
-save(samples,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"/samples.rdata"))    ### unique pixel combination to run in PREBAS
-save(XYsegID,segID,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"/XYsegID.rdata"))    ### Coordinates and segID of all pixels
-
 #### If needed (splitRun = TRUE), unique data is split to separate tables here to enable 
 #    running further scripts in multiple sections. Number of split parts is defined in splitRange variable (in settings).
 #    Running in multiple sections reduces processing time
 
-# if (splitRun) {
-#   
-#   # Create split_id column which is used in splitting the table. NOTICE that the last section might be of unequal size compared to the others.
-#   split_length <- ceiling(nrow(uniqueData)/length(splitRange))
-#   uniqueData <- uniqueData[, split_id := NA]
-# 
-# 
-#   uniqueData$split_id[1:split_length] <- 1
-#   for (i in 2:(max(splitRange)-1)) {
-#     uniqueData$split_id[((i-1)*split_length+1):(split_length*i)] <- i
-#   }
-#   uniqueData$split_id[((length(splitRange)-1)*split_length+1):(nrow(uniqueData))] <- length(splitRange)
-# 
-#   # Split the table to list of elements. Splitting is done based on the split_id.
-#   split_list <- split(uniqueData,uniqueData$split_id)
-# 
-#   for (i in 1:max(splitRange)) {
-#   
-#     # Convert the split results to separate data tables
-#     uniqueDataSplit <- as.data.table(split_list[[i]])
-#   
-#     # Remove split_id column
-#     uniqueDataSplit <- uniqueDataSplit[, split_id:=NULL]
-#   
-#     # Save split tables
-#     save(uniqueDataSplit,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"_split/uniqueData",i,".rdata"))  
-#   
-#     rm(uniqueDataSplit)
-#   }
-# }
+if (splitRun) {
+  
+  # Create split_id column which is used in splitting the table. NOTICE that the last section might be of unequal size compared to the others.
+  split_length <- ceiling(nrow(uniqueData)/length(splitRange))
+  uniqueData <- uniqueData[, split_id := NA]
+  
+  
+  uniqueData$split_id[1:split_length] <- 1
+  for (i in 2:(max(splitRange)-1)) {
+    uniqueData$split_id[((i-1)*split_length+1):(split_length*i)] <- i
+  }
+  uniqueData$split_id[((length(splitRange)-1)*split_length+1):(nrow(uniqueData))] <- length(splitRange)
+  
+  # Split the table to list of elements. Splitting is done based on the split_id.
+  split_list <- split(uniqueData,uniqueData$split_id)
+  
+  for (i in 1:max(splitRange)) {
+    
+    # Convert the split results to separate data tables
+    uniqueDataSplit <- as.data.table(split_list[[i]])
+    
+    # Remove split_id column
+    uniqueDataSplit <- uniqueDataSplit[, split_id:=NULL]
+    
+    # Save split tables
+    save(uniqueDataSplit,file=paste0(generalPath,"init/DA/split/uniqueData",i,".rdata"))  
+    
+    rm(uniqueDataSplit)
+  }
+}else{
+  save(data.all,file=paste0(generalPath,"init/allData.rdata"))         ### All data
+  save(uniqueData,file=paste0(generalPath,"init/uniqueData.rdata"))    ### unique pixel combination to run in PREBAS
+  save(samples,file=paste0(generalPath,"init/samples.rdata"))    ### unique pixel combination to run in PREBAS
+  save(XYsegID,segID,file=paste0(generalPath,"init/XYsegID.rdata"))    ### Coordinates and segID of all pixels
+}

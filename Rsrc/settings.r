@@ -59,6 +59,17 @@ rasterPath2021 <- paste0(generalPath,"2021/")
 procDataPath <- paste0(generalPath,"procData/")
 outPath <- paste0(generalPath,"output/")
 initPrebasPath <- paste0(generalPath,"initPrebas/")
+
+
+if(!exists("climData")) climData = "eObs"
+if(CSCrun){
+  climIDpath <- paste0("weatherInputs/climID_",climData,".tif")
+  climatepath = paste0("weatherInputs/weather_",climData,".rdata") #### local fm
+}else{
+  if(!exists("climatepath")) climatepath = "C:/Users/minunno/Documents/research/extarctWeather/inputs/" #### local fm
+  if(!exists("climIDpath")) climIDpath <- "C:/Users/minunno/Documents/research/FinSeg/some stuff/climID10km.tif"
+}
+
 climatepath = "C:/Users/minunno/Documents/research/extarctWeather/inputs/" #### local fm
 # climatepath = "/scratch/project_2000994/RCP/" ####on CSC
 climIDpath <- "C:/Users/minunno/Documents/research/FinSeg/some stuff/climID10km.tif"

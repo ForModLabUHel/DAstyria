@@ -1,9 +1,9 @@
+if(file.exists("localSettings.r")) {source("localSettings.r")} # use settings file from local directory if one exists
 
 # Run settings 
 library(devtools)
 source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc/settings.r")
 setwd(generalPath)
-if(file.exists("localSettings.r")) {source("localSettings.r")} # use settings file from local directory if one exists
 
 # source_url("https://raw.githubusercontent.com/ForModLabUHel/satRuns/master/Rsrc/rmvweisd.r")
 # source_url("https://raw.githubusercontent.com/ForModLabUHel/satRuns/master/Rsrc/Fweibull_Arithmetic Mean and Variance.R")
@@ -293,33 +293,33 @@ save(XYsegID,segID,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"/XY
 #    running further scripts in multiple sections. Number of split parts is defined in splitRange variable (in settings).
 #    Running in multiple sections reduces processing time
 
-if (splitRun) {
-  
-  # Create split_id column which is used in splitting the table. NOTICE that the last section might be of unequal size compared to the others.
-  split_length <- ceiling(nrow(uniqueData)/length(splitRange))
-  uniqueData <- uniqueData[, split_id := NA]
-
-
-  uniqueData$split_id[1:split_length] <- 1
-  for (i in 2:(max(splitRange)-1)) {
-    uniqueData$split_id[((i-1)*split_length+1):(split_length*i)] <- i
-  }
-  uniqueData$split_id[((length(splitRange)-1)*split_length+1):(nrow(uniqueData))] <- length(splitRange)
-
-  # Split the table to list of elements. Splitting is done based on the split_id.
-  split_list <- split(uniqueData,uniqueData$split_id)
-
-  for (i in 1:max(splitRange)) {
-  
-    # Convert the split results to separate data tables
-    uniqueDataSplit <- as.data.table(split_list[[i]])
-  
-    # Remove split_id column
-    uniqueDataSplit <- uniqueDataSplit[, split_id:=NULL]
-  
-    # Save split tables
-    save(uniqueDataSplit,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"_split/uniqueData",i,".rdata"))  
-  
-    rm(uniqueDataSplit)
-  }
-}
+# if (splitRun) {
+#   
+#   # Create split_id column which is used in splitting the table. NOTICE that the last section might be of unequal size compared to the others.
+#   split_length <- ceiling(nrow(uniqueData)/length(splitRange))
+#   uniqueData <- uniqueData[, split_id := NA]
+# 
+# 
+#   uniqueData$split_id[1:split_length] <- 1
+#   for (i in 2:(max(splitRange)-1)) {
+#     uniqueData$split_id[((i-1)*split_length+1):(split_length*i)] <- i
+#   }
+#   uniqueData$split_id[((length(splitRange)-1)*split_length+1):(nrow(uniqueData))] <- length(splitRange)
+# 
+#   # Split the table to list of elements. Splitting is done based on the split_id.
+#   split_list <- split(uniqueData,uniqueData$split_id)
+# 
+#   for (i in 1:max(splitRange)) {
+#   
+#     # Convert the split results to separate data tables
+#     uniqueDataSplit <- as.data.table(split_list[[i]])
+#   
+#     # Remove split_id column
+#     uniqueDataSplit <- uniqueDataSplit[, split_id:=NULL]
+#   
+#     # Save split tables
+#     save(uniqueDataSplit,file=paste0(procDataPath,"init",startingYear,"/DA",year2,"_split/uniqueData",i,".rdata"))  
+#   
+#     rm(uniqueDataSplit)
+#   }
+# }

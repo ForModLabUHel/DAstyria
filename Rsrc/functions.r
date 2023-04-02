@@ -1056,10 +1056,11 @@ pSVDA_2steps <- function(segIDx,nSample,
              step.modelBconifx=step.modelBconif,
              step.modelBblx=step.modelBbl)
   if(allData){ #return the means and the varCov matrices in vector form
-    return(c(kk,kk2))
+    return(c(segIDx$segID,kk,kk2))
   }else{
     #return just the means and the standard deviations  
-    return(c(kk[1:5],#mean priort t2
+    return(c(segIDx$segID,
+             kk[1:5],#mean priort t2
              kk[31:35],#mean likel t2
              kk[61:65], #mean postt2
              kk2[1:5],#mean prior t3

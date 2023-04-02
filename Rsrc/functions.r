@@ -1023,6 +1023,9 @@ pSVDA_2steps <- function(segIDx,nSample,
                          errorPost, #bias error of posterior distribution to check ...
                          step.modelH,step.modelD,step.modelB,  #regression models could be  specific for each period
                          step.modelBconif,step.modelBbl,
+                         step.modelH2,step.modelD2,
+                         step.modelB2,  #regression models could be  specific for each period
+                         step.modelBconif2,step.modelBbl2,
                          allData=F){
   
   kk <- pSVDA(segIDx,nSample,

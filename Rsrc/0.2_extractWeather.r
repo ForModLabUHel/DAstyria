@@ -99,5 +99,24 @@ if(climData == "eObs"){
   VPD <- matrix(weatherStyria$VPD,ncol = ndays,nrow = nClimIDs,byrow = T)
   CO2 <- matrix(380,ncol = ndays,nrow = nClimIDs,byrow = T)
   
+  ###remove NAs
+  naRows <- unique(which(is.na(PAR),arr.ind = T)[,1])
+  for(i in naRows){
+    nasX <- which(is.na(PAR[i,]))
+    nasXpast <- pmax(1,nasX-5); nasXfutu <- pmin(nasX+5,ncol(PAR))
+    for(ij in 1:length(nasX)){
+      PAR[i,nasX[ij]] <- mean(PAR[i,nasXpast[ij]:nasXfutu[ij]],na.rm=T)
+    }
+  }
+  
+  naRows <- unique(which(is.na(VPD),arr.ind = T)[,1])
+  for(i in naRows){
+    nasX <- which(is.na(VPD[i,]))
+    nasXpast <- pmax(1,nasX-5); nasXfutu <- pmin(nasX+5,ncol(PAR))
+    for(ij in 1:length(nasX)){
+      VPD[i,nasX[ij]] <- mean(VPD[i,nasXpast[ij]:nasXfutu[ij]],na.rm=T)
+    }
+  }
+  
   save(PAR,Precip,VPD,TAir,CO2,file=paste0("weatherInputs/weather_",climData,".rdata"))
 }

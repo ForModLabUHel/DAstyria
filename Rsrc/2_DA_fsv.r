@@ -143,7 +143,6 @@ if(parallelRun){
                                                   step.modelBbl2=step.modelBbl2)[2:61]))
     }
   })
-})
 }
 
 if(splitRun) {  ##  If run in split parts, output produced with each split part is saved temporarily (as pMvn_FSV_split*split_id*.rdata).

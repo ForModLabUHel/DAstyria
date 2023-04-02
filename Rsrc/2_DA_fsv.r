@@ -90,7 +90,7 @@ if(parallelRun){
     pMvNorm <- mclapply(1, function(i){
       # pMvNorm[,i] <- pSVDA(dataSurMod[i],nSample,year1=startingYear,
       #                     year2=year2,tileX=tileX)
-      pMvNorm <- dataSurMod[1:10000, pSVDA_2steps(.SD,
+      pMvNorm <- dataSurMod[1:nSeg, pSVDA_2steps(.SD,
                                                   nSample = nSample,
                                                   errData1 = errDataX,
                                                   errData2 = errDataX,
@@ -127,7 +127,7 @@ if(parallelRun){
   # })
   pMvNorm <- data.table()
   system.time({ # SERIAL PROCESSING
-    for(i in 1:10000){
+    for(i in 1:nSeg){
       pMvNorm <- rbind(pMvNorm,
                        data.table(segID=i,
                                   V1=pSVDA_2steps(segIDx=dataSurMod[i],nSample,

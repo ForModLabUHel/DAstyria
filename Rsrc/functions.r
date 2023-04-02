@@ -642,7 +642,7 @@ pSVDA <- function(segIDx,nSample,
   # sampleX$st <- factor(sampleX$st)
   sampleX[,BAtot:=(BAconif+BAbl)]
   sampleX[,BAh:=BAtot*H]
-  sampleX[,N:=BAtot/(pi*(D/200)^2)]
+  sampleX[,N:=pmin(20000,BAtot/(pi*(D/200)^2))]
   b = -1.605 ###coefficient of Reineke
   sampleX[,SDI:=N *(D/10)^b]
   sampleX$st <- st
@@ -1054,10 +1054,10 @@ pSVDA_2steps <- function(segIDx,nSample,
 
   kk2 <- pSVDA(xx,nSample,
              errDataX,errData3,
-             step.modelHx=step.modelH,step.modelDx=step.modelD,
-             step.modelBx=step.modelB,
-             step.modelBconifx=step.modelBconif,
-             step.modelBblx=step.modelBbl)
+             step.modelHx=step.modelH2,step.modelDx=step.modelD2,
+             step.modelBx=step.modelB2,
+             step.modelBconifx=step.modelBconif2,
+             step.modelBblx=step.modelBbl2)
   if(allData){ #return the means and the varCov matrices in vector form
     return(c(segIDx$segID,kk,kk2))
   }else{

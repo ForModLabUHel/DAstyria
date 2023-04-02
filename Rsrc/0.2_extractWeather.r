@@ -51,6 +51,7 @@ if(climData == "eObs"){
   weatherDataBase <- fread("weatherInputs/prebas_styria_1992-2021_eObs.csv")
   weatherDataBase[,year:=year(time)]
   weatherDataBase[,climID:=climID+1]
+  weatherDataBase <- weatherDataBase[year %in% startingYear:yearEnd] ###select years
   climIDs <- unique(weatherDataBase[,.(lon,lat,climID)])
   
   # raster of climID:s is here
@@ -69,8 +70,8 @@ if(climData == "eObs"){
   climID_raster <- crop(climID_raster,extent(shapeRastOr))
   climID_raster <- raster(vals=values(climID_raster),ext=extent(shapeRastOr),crs=crs(shapeRastOr),
                           nrows=dim(shapeRastOr)[1],ncols=dim(shapeRastOr)[2])
-  
   climID_raster <- mask(climID_raster,shapeRastOr)
+  
   climIDs_Styria <- unique(getValues(climID_raster))
   climIDs_Styria <- climIDs_Styria[!is.na(climIDs_Styria)]
   climIDs_StyriaOr <- sort(climIDs_Styria)
@@ -99,5 +100,4 @@ if(climData == "eObs"){
   CO2 <- matrix(380,ncol = ndays,nrow = nClimIDs,byrow = T)
   
   save(PAR,Precip,VPD,TAir,CO2,file=paste0("weatherInputs/weather_",climData,".rdata"))
-  
 }

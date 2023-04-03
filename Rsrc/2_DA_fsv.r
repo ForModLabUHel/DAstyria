@@ -129,7 +129,7 @@ if(parallelRun){
   # })
   pMvNorm <- data.table()
   system.time({ # SERIAL PROCESSING
-    for(i in 1:nSeg){
+    for(i in 1:10000){ #nSeg
       pMvNorm <- rbind(pMvNorm,
                        data.table(segID=i,
                                   V1=pSVDA_2steps(segIDx=dataSurMod[i],nSample,
@@ -146,7 +146,6 @@ if(parallelRun){
                                                   dist="mvnorm")[2:61]))
     }
   })
-})
 }
 
 if(splitRun) {  ##  If run in split parts, output produced with each split part is saved temporarily (as pMvn_FSV_split*split_id*.rdata).

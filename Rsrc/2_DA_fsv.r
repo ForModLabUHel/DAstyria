@@ -82,6 +82,7 @@ pMvNorm <- data.table()
 errDataX <- errData$y2015$all
 postErr <- errDataX$muFSVda
 
+print("running DA")
 
 if(parallelRun){
   

@@ -1,5 +1,6 @@
 library(MASS)
 library(devtools)
+library(mvtnorm)
 
 source("localSettings.r")
 # Run settings 
@@ -90,7 +91,7 @@ if(parallelRun){
     pMvNorm <- mclapply(1, function(i){
       # pMvNorm[,i] <- pSVDA(dataSurMod[i],nSample,year1=startingYear,
       #                     year2=year2,tileX=tileX)
-      pMvNorm <- dataSurMod[1:nSeg, pSVDA_2steps(.SD,
+      pMvNorm <- dataSurMod[1:10000, pSVDA_2steps(.SD,
                                                   nSample = nSample,
                                                   errData1 = errDataX,
                                                   errData2 = errDataX,
@@ -106,7 +107,7 @@ if(parallelRun){
                                                   step.modelB2=step.modelB2,
                                                   step.modelBconif2=step.modelBconif2,
                                                   step.modelBbl2=step.modelBbl2,
-                                                 dist="mvnorm"),
+                                                  dist="mvnorm"),
                             by = segID]
     },mc.cores = coresN)
   })
@@ -145,6 +146,7 @@ if(parallelRun){
                                                   dist="mvnorm")[2:61]))
     }
   })
+})
 }
 
 if(splitRun) {  ##  If run in split parts, output produced with each split part is saved temporarily (as pMvn_FSV_split*split_id*.rdata).

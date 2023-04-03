@@ -550,7 +550,8 @@ pSTx <- function(segIDx,nSample,year1,year2,tileX){
 pSVDA <- function(segIDx,nSample,
                   errData1,errData2,
                   step.modelHx,step.modelDx,step.modelBx,
-                  step.modelBconifx,step.modelBblx){
+                  step.modelBconifx,step.modelBblx,
+                  dist="weibull"){
   mu1 <- errData1$muFSVda
   sigma1 <- errData1$sigmaFSVda
   mu2 <- errData2$muFSVda
@@ -562,11 +563,16 @@ pSVDA <- function(segIDx,nSample,
   set.seed(1234)
   
   muX <- mu1 + c(segIDx$BAtot, segIDx$D,segIDx$H,segIDx$BAconifPer,segIDx$BAblPer)
-  if(any(muX<0)) muX[which(muX<0)] <- 1
-  abc<-Fweibull.v(muX,diag(sigma1))
-  shd<-data.frame(shape=abc$c,decay=abc$b^(-abc$c))
-  rho<-cov2cor(sigma1)
-  sampleX <- data.table(rmvweisd(nSample*10, shd$shape, shd$decay, rho))
+  if(dist=="weibull"){
+    if(any(muX<0)) muX[which(muX<0)] <- 1
+    abc<-Fweibull.v(muX,diag(sigma1))
+    shd<-data.frame(shape=abc$c,decay=abc$b^(-abc$c))
+    rho<-cov2cor(sigma1)
+    sampleX <- data.table(rmvweisd(nSample*10, shd$shape, shd$decay, rho))
+  }
+  if(dist=="mvnorm"){
+    sampleX <- data.table(mvrnorm(nSample, mu = muX, Sigma = sigma1))
+  }
   colnames(sampleX)<-c('BAtot','D','H','BAconifPer','BAblPer')
   
 ###filter data
@@ -1026,14 +1032,16 @@ pSVDA_2steps <- function(segIDx,nSample,
                          step.modelH2,step.modelD2,
                          step.modelB2,  #regression models could be  specific for each period
                          step.modelBconif2,step.modelBbl2,
-                         allData=F){
+                         allData=F,
+                         dist="weibull"){
   
   kk <- pSVDA(segIDx,nSample,
               errData1,errData2,
               step.modelHx=step.modelH,step.modelDx=step.modelD,
               step.modelBx=step.modelB,
               step.modelBconifx=step.modelBconif,
-              step.modelBblx=step.modelBbl)
+              step.modelBblx=step.modelBbl,
+              dist=dist)
   xx <-segIDx
   xx$H <- kk[61]
   xx$D <- kk[62]
@@ -1057,7 +1065,8 @@ pSVDA_2steps <- function(segIDx,nSample,
              step.modelHx=step.modelH2,step.modelDx=step.modelD2,
              step.modelBx=step.modelB2,
              step.modelBconifx=step.modelBconif2,
-             step.modelBblx=step.modelBbl2)
+             step.modelBblx=step.modelBbl2,
+             dist=dist)
   if(allData){ #return the means and the varCov matrices in vector form
     return(c(segIDx$segID,kk,kk2))
   }else{

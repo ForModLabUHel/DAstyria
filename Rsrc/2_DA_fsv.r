@@ -105,7 +105,8 @@ if(parallelRun){
                                                   step.modelD2=step.modelD2,
                                                   step.modelB2=step.modelB2,
                                                   step.modelBconif2=step.modelBconif2,
-                                                  step.modelBbl2=step.modelBbl2),
+                                                  step.modelBbl2=step.modelBbl2,
+                                                 dist="mvnorm"),
                             by = segID]
     },mc.cores = coresN)
   })
@@ -140,7 +141,8 @@ if(parallelRun){
                                                   step.modelH2=step.modelH2,step.modelD2=step.modelD2,
                                                   step.modelB2=step.modelB2,
                                                   step.modelBconif2=step.modelBconif2,
-                                                  step.modelBbl2=step.modelBbl2)[2:61]))
+                                                  step.modelBbl2=step.modelBbl2,
+                                                  dist="mvnorm")[2:61]))
     }
   })
 }

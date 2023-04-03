@@ -1030,10 +1030,10 @@ pSVDA_2steps <- function(segIDx,nSample,
   
   kk <- pSVDA(segIDx,nSample,
               errData1,errData2,
-              step.modelHx=step.modelH2,step.modelDx=step.modelD2,
-              step.modelBx=step.modelB2,
-              step.modelBconifx=step.modelBconif2,
-              step.modelBblx=step.modelBbl2)
+              step.modelHx=step.modelH,step.modelDx=step.modelD,
+              step.modelBx=step.modelB,
+              step.modelBconifx=step.modelBconif,
+              step.modelBblx=step.modelBbl)
   xx <-segIDx
   xx$H <- kk[61]
   xx$D <- kk[62]

@@ -11,7 +11,7 @@ source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc
 
 ###check and create output directories
 setwd(generalPath)
-mkfldr <- paste0("posterior",year2,"/")
+mkfldr <- paste0("posterior/")
 if(!dir.exists(file.path(generalPath, mkfldr))) {
   dir.create(file.path(generalPath, mkfldr), recursive = TRUE)
 }

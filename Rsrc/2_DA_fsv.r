@@ -152,6 +152,7 @@ if(splitRun) {  ##  If run in split parts, output produced with each split part 
   ##  Split outputs will be combined and saved to pMvn_FSV.rdata file when the last split part is processed
   
   save(pMvNorm, file = paste0("posterior/pMvn_FSV_split",split_id,".rdata"))
+  print(paste("ID",split_id,"DA completed"))
   
   # if(split_id==max(splitRange)){
   #   
@@ -176,4 +177,5 @@ if(splitRun) {  ##  If run in split parts, output produced with each split part 
   
 } else {
   save(pMvNorm,file="posterior/pMvn_FSV.rdata") # pMvNorm finished for the whole dataset
+  print("DA completed")
 }

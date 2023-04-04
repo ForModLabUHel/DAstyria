@@ -3,6 +3,7 @@ vPREBAS <- "master"   #### choose PREBAS version to run the model  "master"
 
 
 #####Settings####
+if(!exists("nSampleSurrMod")) nSampleSurrMod = 20000 #### #samples for surrMod calibration
 if(!exists("testRun")) testRun = T ####set to TRUE to test the code on a small raster proportion
 if(!exists("extNew")) extNew <- c(550000,550500,5200000,5200500)
 if(!exists("CSCrun")){
@@ -175,7 +176,7 @@ coresN <- 20L ### Set number of cores to use in parallel run
 # Set whether to split unique data in 1.1 to smaller parts. If
 # TRUE, data is split.
 if(!exists("splitRun")) splitRun <- FALSE
-nSplit <- 100
+nSplit <- 1000
 if(splitRun){    # Range/number of split parts
   splitRange <- 1:nSplit
 }

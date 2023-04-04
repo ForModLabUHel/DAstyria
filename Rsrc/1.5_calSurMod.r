@@ -17,13 +17,16 @@ if(!dir.exists(file.path(generalPath, mkfldr))) {
 yearX <- 3
 
 ####needs to be changed for ForUnc runs
-load(paste0(procDataPath,"/samples.rdata"))  
+load(paste0(procDataPath,"/uniqueData.rdata"))
+set.seed(123)
+data.sample <- uniqueData[sample(1:nrow(uniqueData),nSampleSurrMod)]
 
 sampleID <- 10
 rcpfile="CurrClim"
 
 # resample siteType using a uniform distribution 
-samples[[sampleID]]$siteType <- sample(1:5,nrow(samples[[sampleID]]),replace = T)
+set.seed(1234)
+data.sample$siteType <- sample(1:5,nSampleSurrMod,replace = T)
 
 ###load weather inputs
 load(climatepath)
@@ -36,7 +39,7 @@ load(climatepath)
 # }
 
 ## Prepare the same initial state for all harvest scenarios that are simulated in a loop below
-data.sample <- samples[[sampleID]]
+
 totAreaSample <- sum(data.sample$area)
 
 ###check if climID matches

@@ -316,6 +316,6 @@ if (splitRun) {
 }else{
   save(data.all,file=paste0(generalPath,"procData/allData.rdata"))         ### All data
   save(uniqueData,file=paste0(generalPath,"procData/uniqueData.rdata"))    ### unique pixel combination to run in PREBAS
-  save(samples,file=paste0(generalPath,"procData/samples.rdata"))    ### unique pixel combination to run in PREBAS
+  # save(samples,file=paste0(generalPath,"procData/samples.rdata"))    ### unique pixel combination to run in PREBAS
   save(XYsegID,segID,file=paste0(generalPath,"procData/XYsegID.rdata"))    ### Coordinates and segID of all pixels
 }

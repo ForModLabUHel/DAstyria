@@ -1078,12 +1078,12 @@ pSVDA_2steps <- function(segIDx,nSample,
              kk2[1:5],#mean prior t3
              kk2[31:35],#mean likel t3
              kk2[61:65],#mean post t3
-             sqrt(kk[seq(6,30,by=6)]),#sd priort t2
-             sqrt(kk[seq(36,60,by=6)]),#sd likel t2
-             sqrt(kk[seq(66,90,by=6)]), #sd postt2
-             sqrt(kk2[seq(6,30,by=6)]),#sd priort t3
-             sqrt(kk2[seq(36,60,by=6)]),#sd likel t3
-             sqrt(kk2[seq(66,90,by=6)]) #sd postt3
+             # sqrt(kk[seq(6,30,by=6)]),#sd priort t2
+             # sqrt(kk[seq(36,60,by=6)]),#sd likel t2
+             # sqrt(kk[seq(66,90,by=6)]), #sd postt2
+             # sqrt(kk2[seq(6,30,by=6)]),#sd priort t3
+             # sqrt(kk2[seq(36,60,by=6)]),#sd likel t3
+             # sqrt(kk2[seq(66,90,by=6)]) #sd postt3
     ))
   } 
 }

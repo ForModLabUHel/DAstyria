@@ -95,7 +95,7 @@ Dx <- out[,yearX,12,1,1] * out[,yearX,13,1,1]/Bx +
 
 PREBx <- data.table(segID=initPrebas$siteInfo[,1],V3 = Vx, B3 = Bx,
                     H3 = Hx, D3 = Dx,Wabg3=Wabgx,Wblg3=Wblgx,
-                    Bcon3=Bconx,Bbl3=Bblx)
+                    Bcon3=Bconx,Bbl3=Bblx,Bh3=Bx*Hx)
 print("runs completed")
 
 
@@ -116,10 +116,11 @@ dataX <- data.table(cbind(initPrebas$multiInitVar[,3:5,1],initPrebas$multiInitVa
                           initPrebas$siteInfo[,3],
                           PREBx$V3,PREBx$B3,PREBx$H3,PREBx$D3,
                           PREBx$Bcon3,PREBx$Bbl3,
-                          PREBx$Wabg3,PREBx$Wblg3))
+                          PREBx$Wabg3,PREBx$Wblg3,
+                          PREBx$Bh3))
 setnames(dataX,c("H","D","BAconif","BAbl","st","Vmod","Bmod",
                  "Hmod","Dmod","BAconifmod","BAblmod",
-                 "Wabgmod","Wblgmod"))
+                 "Wabgmod","Wblgmod","Bhmod"))
 # if(!all(unique(dataX$st) %in% unique(uniqueData$siteType))) stop("not all siteTypes of the tile are in the sample")
 
 #### Here we use stepwise regression to construct an emulator for stand variables prediction
@@ -133,9 +134,6 @@ b = -1.605 ###coefficient of Reineke
 dataX[,SDI:=N *(D/10)^b]
 dataX[,rootBAconif:=BAconif^0.5]
 dataX[,BAconif2:=BAconif^(2)]
-full.modelV <-lm(Vmod~H+D+BAh+BAconif+BAbl+st,data=dataX)
-step.modelV <- stepAIC(full.modelV, direction = "both",
-                       trace = FALSE)
 full.modelB <-lm(Bmod~H+D+BAh+BAconif+BAbl+st,data=dataX)
 step.modelB <- stepAIC(full.modelB, direction = "both",
                        trace = FALSE)
@@ -151,10 +149,13 @@ step.modelBconif <- stepAIC(full.modelBconif, direction = "both",
 full.modelBbl <-lm(BAblmod~H+D+BAh+BAconif+BAbl+st,data=dataX)
 step.modelBbl <- stepAIC(full.modelBbl, direction = "both",
                          trace = FALSE)
-full.modelWabg <-lm(Wabgmod~H+D+BAh+BAconif+BAbl+st,data=dataX)
+full.modelV <-lm(Vmod~Hmod+Dmod+Bhmod+BAconifmod+BAblmod+st,data=dataX)
+step.modelV <- stepAIC(full.modelV, direction = "both",
+                       trace = FALSE)
+full.modelWabg <-lm(Wabgmod~Hmod+Dmod+Bhmod+BAconifmod+BAblmod+st,data=dataX)
 step.modelWabg <- stepAIC(full.modelWabg, direction = "both",
                           trace = FALSE)
-full.modelWblg <-lm(Wblgmod~H+D+BAh+BAconif+BAbl+st,data=dataX)
+full.modelWblg <-lm(Wblgmod~Hmod+Dmod+Bhmod+BAconifmod+BAblmod+st,data=dataX)
 step.modelWblg <- stepAIC(full.modelWblg, direction = "both",
                           trace = FALSE)
 # start<-as.vector(full.model$coefficients)
@@ -232,7 +233,7 @@ Dx <- out[,yearX,12,1,1] * out[,yearX,13,1,1]/Bx +
 
 PREBx <- data.table(segID=initPrebas$siteInfo[,1],V3 = Vx, B3 = Bx,
                     H3 = Hx, D3 = Dx,Wabg3=Wabgx,Wblg3=Wblgx,
-                    Bcon3=Bconx,Bbl3=Bblx)
+                    Bcon3=Bconx,Bbl3=Bblx,Bh3=Bx*Hx)
 print("runs completed")
 
 
@@ -254,10 +255,11 @@ dataX <- data.table(cbind(initPrebas$multiInitVar[,3:5,1],initPrebas$multiInitVa
                           initPrebas$siteInfo[,3],
                           PREBx$V3,PREBx$B3,PREBx$H3,PREBx$D3,
                           PREBx$Bcon3,PREBx$Bbl3,
-                          PREBx$Wabg3,PREBx$Wblg3))
+                          PREBx$Wabg3,PREBx$Wblg3,
+                          PREBx$Bh3))
 setnames(dataX,c("H","D","BAconif","BAbl","st","Vmod","Bmod",
                  "Hmod","Dmod","BAconifmod","BAblmod",
-                 "Wabgmod","Wblgmod"))
+                 "Wabgmod","Wblgmod","Bhmod"))
 # if(!all(unique(dataX$st) %in% unique(uniqueData$siteType))) stop("not all siteTypes of the tile are in the sample")
 
 #### Here we use stepwise regression to construct an emulator for stand variables prediction
@@ -271,9 +273,6 @@ b = -1.605 ###coefficient of Reineke
 dataX[,SDI:=N *(D/10)^b]
 dataX[,rootBAconif:=BAconif^0.5]
 dataX[,BAconif2:=BAconif^(2)]
-full.modelV <-lm(Vmod~H+D+BAh+BAconif+BAbl+st,data=dataX)
-step.modelV2 <- stepAIC(full.modelV, direction = "both",
-                        trace = FALSE)
 full.modelB <-lm(Bmod~H+D+BAh+BAconif+BAbl+st,data=dataX)
 step.modelB2 <- stepAIC(full.modelB, direction = "both",
                         trace = FALSE)
@@ -289,10 +288,13 @@ step.modelBconif2 <- stepAIC(full.modelBconif, direction = "both",
 full.modelBbl <-lm(BAblmod~H+D+BAh+BAconif+BAbl+st,data=dataX)
 step.modelBbl2 <- stepAIC(full.modelBbl, direction = "both",
                           trace = FALSE)
-full.modelWabg <-lm(Wabgmod~H+D+BAh+BAconif+BAbl+st,data=dataX)
+full.modelV <-lm(Vmod~Hmod+Dmod+Bhmod+BAconifmod+BAblmod+st,data=dataX)
+step.modelV2 <- stepAIC(full.modelV, direction = "both",
+                        trace = FALSE)
+full.modelWabg <-lm(Wabgmod~Hmod+Dmod+Bhmod+BAconifmod+BAblmod+st,data=dataX)
 step.modelWabg2 <- stepAIC(full.modelWabg, direction = "both",
                            trace = FALSE)
-full.modelWblg <-lm(Wblgmod~H+D+BAh+BAconif+BAbl+st,data=dataX)
+full.modelWblg <-lm(Wblgmod~Hmod+Dmod+Bhmod+BAconifmod+BAblmod+st,data=dataX)
 step.modelWblg2 <- stepAIC(full.modelWblg, direction = "both",
                            trace = FALSE)
 # start<-as.vector(full.model$coefficients)

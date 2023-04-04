@@ -83,6 +83,8 @@ print("model initialized")
 ###run Model
 out <- multiPrebas(initPrebas)$multiOut
 Vx <- rowSums(out[,yearX,30,,1])
+Wabgx <- rowSums(out[,yearX,24,,1]) + rowSums(out[,yearX,31,,1]) + rowSums(out[,yearX,33,,1])
+Wblgx <- rowSums(out[,yearX,25,,1]) + rowSums(out[,yearX,32,,1])
 Bx <- rowSums(out[,yearX,13,,1])
 Bconx <- out[,yearX,13,1,1]
 Bblx <- out[,yearX,13,2,1]
@@ -92,7 +94,7 @@ Dx <- out[,yearX,12,1,1] * out[,yearX,13,1,1]/Bx +
   out[,yearX,12,2,1] * out[,yearX,13,2,1]/Bx
 
 PREBx <- data.table(segID=initPrebas$siteInfo[,1],V3 = Vx, B3 = Bx,
-                    H3 = Hx, D3 = Dx,
+                    H3 = Hx, D3 = Dx,Wabg3=Wabgx,Wblg3=Wblgx,
                     Bcon3=Bconx,Bbl3=Bblx)
 print("runs completed")
 
@@ -113,9 +115,11 @@ load(url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/data/i
 dataX <- data.table(cbind(initPrebas$multiInitVar[,3:5,1],initPrebas$multiInitVar[,5,2],
                           initPrebas$siteInfo[,3],
                           PREBx$V3,PREBx$B3,PREBx$H3,PREBx$D3,
-                          PREBx$Bcon3,PREBx$Bbl3))
+                          PREBx$Bcon3,PREBx$Bbl3,
+                          PREBx$Wabg3,PREBx$Wblg3))
 setnames(dataX,c("H","D","BAconif","BAbl","st","Vmod","Bmod",
-                 "Hmod","Dmod","BAconifmod","BAblmod"))
+                 "Hmod","Dmod","BAconifmod","BAblmod",
+                 "Wabgmod","Wblgmod"))
 # if(!all(unique(dataX$st) %in% unique(uniqueData$siteType))) stop("not all siteTypes of the tile are in the sample")
 
 #### Here we use stepwise regression to construct an emulator for stand variables prediction
@@ -129,24 +133,30 @@ b = -1.605 ###coefficient of Reineke
 dataX[,SDI:=N *(D/10)^b]
 dataX[,rootBAconif:=BAconif^0.5]
 dataX[,BAconif2:=BAconif^(2)]
-full.modelV <-lm(Vmod~H+D+SDI+BAh+BAconif+BAbl+st,data=dataX)
+full.modelV <-lm(Vmod~H+D+BAh+BAconif+BAbl+st,data=dataX)
 step.modelV <- stepAIC(full.modelV, direction = "both",
                        trace = FALSE)
-full.modelB <-lm(Bmod~H+D+SDI+BAh+BAconif+BAbl+st,data=dataX)
+full.modelB <-lm(Bmod~H+D+BAh+BAconif+BAbl+st,data=dataX)
 step.modelB <- stepAIC(full.modelB, direction = "both",
                        trace = FALSE)
-full.modelH <-lm(Hmod~H+D+SDI+BAconif+BAbl+st,data=dataX)
+full.modelH <-lm(Hmod~H+D+BAconif+BAbl+st,data=dataX)
 step.modelH <- stepAIC(full.modelH, direction = "both",
                        trace = FALSE)
-full.modelD <-lm(Dmod~H+D+SDI+BAh+BAconif+BAbl+st,data=dataX)
+full.modelD <-lm(Dmod~H+D+BAh+BAconif+BAbl+st,data=dataX)
 step.modelD <- stepAIC(full.modelD, direction = "both",
                        trace = FALSE)
-full.modelBconif <-lm(BAconifmod~H+D+SDI+BAh+BAconif+BAbl+st+rootBAconif,data=dataX)
+full.modelBconif <-lm(BAconifmod~H+D+BAh+BAconif+BAbl+st+rootBAconif,data=dataX)
 step.modelBconif <- stepAIC(full.modelBconif, direction = "both",
                             trace = FALSE)
-full.modelBbl <-lm(BAblmod~H+D+SDI+BAh+BAconif+BAbl+st,data=dataX)
+full.modelBbl <-lm(BAblmod~H+D+BAh+BAconif+BAbl+st,data=dataX)
 step.modelBbl <- stepAIC(full.modelBbl, direction = "both",
                          trace = FALSE)
+full.modelWabg <-lm(Wabgmod~H+D+BAh+BAconif+BAbl+st,data=dataX)
+step.modelWabg <- stepAIC(full.modelWabg, direction = "both",
+                          trace = FALSE)
+full.modelWblg <-lm(Wblgmod~H+D+BAh+BAconif+BAbl+st,data=dataX)
+step.modelWblg <- stepAIC(full.modelWblg, direction = "both",
+                          trace = FALSE)
 # start<-as.vector(full.model$coefficients)
 ### Anonther option is to use nonlinear regression, which differed in error assumption. 
 # full.model0<-lm(lnVmod~H+D+SDI+BAh+BAp+BAsp+BAb+st,data=dataX)
@@ -183,11 +193,16 @@ plot(step.modelBconif$fitted.values,dataX$BAconifmod,pch=".",col=2)
 abline(0,1)
 plot(step.modelBbl$fitted.values,dataX$BAblmod,pch=".",col=2)
 abline(0,1)
+plot(step.modelWabg$fitted.values,dataX$Wabgmod,pch=".",col=2)
+abline(0,1)
+plot(step.modelWblg$fitted.values,dataX$Wblgmod,pch=".",col=2)
+abline(0,1)
 
 # summary(nonlinear)
 # summary(step.model)
 save(step.modelV,step.modelB,step.modelD,step.modelH,
      step.modelBconif,step.modelBbl,
+     step.modelWabg,step.modelWblg,
      file="surErrMods/surMod_Step1.rdata") ###needs to be changed update name
 
 
@@ -205,6 +220,8 @@ print("model initialized")
 ###run Model
 out <- multiPrebas(initPrebas)$multiOut
 Vx <- rowSums(out[,yearX,30,,1])
+Wabgx <- rowSums(out[,yearX,24,,1]) + rowSums(out[,yearX,31,,1]) + rowSums(out[,yearX,33,,1])
+Wblgx <- rowSums(out[,yearX,25,,1]) + rowSums(out[,yearX,32,,1])
 Bx <- rowSums(out[,yearX,13,,1])
 Bconx <- out[,yearX,13,1,1]
 Bblx <- out[,yearX,13,2,1]
@@ -214,7 +231,7 @@ Dx <- out[,yearX,12,1,1] * out[,yearX,13,1,1]/Bx +
   out[,yearX,12,2,1] * out[,yearX,13,2,1]/Bx
 
 PREBx <- data.table(segID=initPrebas$siteInfo[,1],V3 = Vx, B3 = Bx,
-                    H3 = Hx, D3 = Dx,
+                    H3 = Hx, D3 = Dx,Wabg3=Wabgx,Wblg3=Wblgx,
                     Bcon3=Bconx,Bbl3=Bblx)
 print("runs completed")
 
@@ -236,9 +253,11 @@ load(url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/data/i
 dataX <- data.table(cbind(initPrebas$multiInitVar[,3:5,1],initPrebas$multiInitVar[,5,2],
                           initPrebas$siteInfo[,3],
                           PREBx$V3,PREBx$B3,PREBx$H3,PREBx$D3,
-                          PREBx$Bcon3,PREBx$Bbl3))
+                          PREBx$Bcon3,PREBx$Bbl3,
+                          PREBx$Wabg3,PREBx$Wblg3))
 setnames(dataX,c("H","D","BAconif","BAbl","st","Vmod","Bmod",
-                 "Hmod","Dmod","BAconifmod","BAblmod"))
+                 "Hmod","Dmod","BAconifmod","BAblmod",
+                 "Wabgmod","Wblgmod"))
 # if(!all(unique(dataX$st) %in% unique(uniqueData$siteType))) stop("not all siteTypes of the tile are in the sample")
 
 #### Here we use stepwise regression to construct an emulator for stand variables prediction
@@ -270,6 +289,12 @@ step.modelBconif2 <- stepAIC(full.modelBconif, direction = "both",
 full.modelBbl <-lm(BAblmod~H+D+BAh+BAconif+BAbl+st,data=dataX)
 step.modelBbl2 <- stepAIC(full.modelBbl, direction = "both",
                           trace = FALSE)
+full.modelWabg <-lm(Wabgmod~H+D+BAh+BAconif+BAbl+st,data=dataX)
+step.modelWabg2 <- stepAIC(full.modelWabg, direction = "both",
+                           trace = FALSE)
+full.modelWblg <-lm(Wblgmod~H+D+BAh+BAconif+BAbl+st,data=dataX)
+step.modelWblg2 <- stepAIC(full.modelWblg, direction = "both",
+                           trace = FALSE)
 # start<-as.vector(full.model$coefficients)
 ### Anonther option is to use nonlinear regression, which differed in error assumption. 
 # full.model0<-lm(lnVmod~H+D+SDI+BAh+BAp+BAsp+BAb+st,data=dataX)
@@ -306,10 +331,15 @@ plot(step.modelBconif2$fitted.values,dataX$BAconifmod,pch=".",col=2)
 abline(0,1)
 plot(step.modelBbl2$fitted.values,dataX$BAblmod,pch=".",col=2)
 abline(0,1)
+plot(step.modelWabg2$fitted.values,dataX$Wabgmod,pch=".",col=2)
+abline(0,1)
+plot(step.modelWblg2$fitted.values,dataX$Wblgmod,pch=".",col=2)
+abline(0,1)
 
 # summary(nonlinear)
 # summary(step.model)
 save(step.modelV2,step.modelB2,step.modelD2,step.modelH2,
      step.modelBconif2,step.modelBbl2,
+     step.modelWabg2,step.modelWblg2,
      file="surErrMods/surMod_Step2.rdata") ###needs to be changed update name
 

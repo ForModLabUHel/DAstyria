@@ -170,7 +170,7 @@ siteTypeX <- startingYear #startingYear #year2 #startingYear #1:5
 
 
 # Set TRUE to enable running 1.8_optST, 2_InitPreb and 3_runModel in parallel. Set to FALSE, these scripts run as serial.
-parallelRun <- FALSE
+if(!exists("parallelRun")) parallelRun <- FALSE
 coresN <- 20L ### Set number of cores to use in parallel run 
 
 # Set whether to split unique data in 1.1 to smaller parts. If

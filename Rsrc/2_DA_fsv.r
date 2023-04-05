@@ -144,7 +144,7 @@ if(parallelRun){
                                                   step.modelB2=step.modelB2,
                                                   step.modelBconif2=step.modelBconif2,
                                                   step.modelBbl2=step.modelBbl2,
-                                                  dist="mvnorm")[2:61]))
+                                                  dist="mvnorm")[2:30]))
     }
   })
 }

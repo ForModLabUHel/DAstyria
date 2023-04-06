@@ -13,7 +13,7 @@ setwd(generalPath)
 # }
 
 if (splitRun) {
-  print(paste("#", nSplit))
+  print(paste("# of splits", nSplit))
   # If output is set to be split to smaller parts (splitRun = TRUE), create separate
   # folder for the split data tables.
   mkfldr_split <- "procData/split"

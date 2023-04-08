@@ -5,12 +5,12 @@ source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc
 # Run functions 
 source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc/functions.r")
 
+setwd(generalPath)
 
 load("surErrMods/surMod_Step1.rdata")
 load("surErrMods/surMod_Step2.rdata")
 
 # Check and create output directories
-setwd(generalPath)
 mkfldr <- "outRast/"
 if(!dir.exists(file.path(generalPath, mkfldr))) {
   dir.create(file.path(generalPath, mkfldr), recursive = TRUE)

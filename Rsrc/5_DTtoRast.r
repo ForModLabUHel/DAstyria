@@ -7,8 +7,8 @@ source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc
 
 setwd(generalPath)
 
-load("surErrMods/surMod_Step1.rdata")
-load("surErrMods/surMod_Step2.rdata")
+load(paste0("surErrMods/surMod_Step1_cal",cal,".rdata"))
+load(paste0("surErrMods/surMod_Step2_cal",cal,".rdata"))
 
 # Check and create output directories
 mkfldr <- "outRast/"

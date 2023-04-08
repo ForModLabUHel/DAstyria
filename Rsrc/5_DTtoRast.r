@@ -106,21 +106,20 @@ oo <- merge(XYsegID, allData[year==2018], by.x = "segID",
             by.y = "segID", all.x = TRUE, all.y = FALSE)
 
 H_rast <- rasterFromXYZ(oo[,.(x,y,Hmod)])
-D_rast <- rasterFromXYZ(oo[,.(x,y,Dmod)])
-G_rast <- rasterFromXYZ(oo[,.(x,y,Bmod)])
-conif_rast <- rasterFromXYZ(oo[,.(x,y,Conifmod)])
-brleaf_rast <- rasterFromXYZ(oo[,.(x,y,Blmod)])
-V_rast <- rasterFromXYZ(oo[,.(x,y,V)])
-Wabg_rast <- rasterFromXYZ(oo[,.(x,y,Wabg)])
-Wblg_rast <- rasterFromXYZ(oo[,.(x,y,Wblg)])
-
 writeRaster(H_rast,file="outRast/H_da2018.tif")
+D_rast <- rasterFromXYZ(oo[,.(x,y,Dmod)])
 writeRaster(D_rast,file="outRast/D_da2018.tif")
+G_rast <- rasterFromXYZ(oo[,.(x,y,Bmod)])
 writeRaster(G_rast,file="outRast/G_da2018.tif")
+conif_rast <- rasterFromXYZ(oo[,.(x,y,Conifmod)])
 writeRaster(conif_rast,file="outRast/conif_da2018.tif")
+brleaf_rast <- rasterFromXYZ(oo[,.(x,y,Blmod)])
 writeRaster(brleaf_rast,file="outRast/brleaf_da2018.tif")
+V_rast <- rasterFromXYZ(oo[,.(x,y,V)])
 writeRaster(V_rast,file="outRast/V_da2018.tif")
+Wabg_rast <- rasterFromXYZ(oo[,.(x,y,Wabg)])
 writeRaster(Wabg_rast,file="outRast/Wabg_da2018.tif")
+Wblg_rast <- rasterFromXYZ(oo[,.(x,y,Wblg)])
 writeRaster(Wblg_rast,file="outRast/Wblg_da2018.tif")
 
 
@@ -130,22 +129,22 @@ oo <- merge(XYsegID, allData[year==2021], by.x = "segID",
             by.y = "segID", all.x = TRUE, all.y = FALSE)
 
 H_rast <- rasterFromXYZ(oo[,.(x,y,Hmod)])
-D_rast <- rasterFromXYZ(oo[,.(x,y,Dmod)])
-G_rast <- rasterFromXYZ(oo[,.(x,y,Bmod)])
-conif_rast <- rasterFromXYZ(oo[,.(x,y,Conifmod)])
-brleaf_rast <- rasterFromXYZ(oo[,.(x,y,Blmod)])
-V_rast <- rasterFromXYZ(oo[,.(x,y,V)])
-Wabg_rast <- rasterFromXYZ(oo[,.(x,y,Wabg)])
-Wblg_rast <- rasterFromXYZ(oo[,.(x,y,Wblg)])
-
 writeRaster(H_rast,file="outRast/H_da2021.tif")
+D_rast <- rasterFromXYZ(oo[,.(x,y,Dmod)])
 writeRaster(D_rast,file="outRast/D_da2021.tif")
+G_rast <- rasterFromXYZ(oo[,.(x,y,Bmod)])
 writeRaster(G_rast,file="outRast/G_da2021.tif")
+conif_rast <- rasterFromXYZ(oo[,.(x,y,Conifmod)])
 writeRaster(conif_rast,file="outRast/conif_da2021.tif")
+brleaf_rast <- rasterFromXYZ(oo[,.(x,y,Blmod)])
 writeRaster(brleaf_rast,file="outRast/brleaf_da2021.tif")
+V_rast <- rasterFromXYZ(oo[,.(x,y,V)])
 writeRaster(V_rast,file="outRast/V_da2021.tif")
+Wabg_rast <- rasterFromXYZ(oo[,.(x,y,Wabg)])
 writeRaster(Wabg_rast,file="outRast/Wabg_da2021.tif")
+Wblg_rast <- rasterFromXYZ(oo[,.(x,y,Wblg)])
 writeRaster(Wblg_rast,file="outRast/Wblg_da2021.tif")
+
 
 
 

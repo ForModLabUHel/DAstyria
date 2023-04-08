@@ -1,5 +1,4 @@
 library(devtools)
-source("Rsrc/localSettings.r")
 # Run settings (if modifiedSettings is not set to TRUE in batch job script, default settings from Github will be used)
 source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc/settings.r")
 

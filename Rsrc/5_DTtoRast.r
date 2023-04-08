@@ -5,6 +5,10 @@ source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc
 # Run functions 
 source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc/functions.r")
 
+
+load("surErrMods/surMod_Step1.rdata")
+load("surErrMods/surMod_Step2.rdata")
+
 # Check and create output directories
 setwd(generalPath)
 mkfldr <- "outRast/"

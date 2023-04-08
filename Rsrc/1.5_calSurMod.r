@@ -1,3 +1,4 @@
+setwd("/scratch/project_2000994/PREBASruns/FCMaustria/Rsrc/")
 library(devtools)
 source("localSettings.r") # use settings in local directory if one exists
 
@@ -72,8 +73,19 @@ clim$CO2 <- CO2[samClIds,]
 # px[17,] = pCROB[17,]*0.03
 # change nYears
 nYears1=year2-startingYear
+
+####
+if(cal=="austria"){
+  load("/scratch/project_2000994/calibrations/calAustria/outCal/pCROBASaustria.rdata")
+  pCROBAS <- pCROBASaustria
+}else{
+  pCROBAS <- pCROB
+}
+
+
 # Region = nfiareas[ID==r_no, Region]
-initPrebas = create_prebas_input.f(clim, data.sample=data.sample, nYears = nYears1, 
+initPrebas = create_prebas_input.f(clim, pX = pCROBAS,
+                                   data.sample=data.sample, nYears = nYears1, 
                                    startSim = startingYear,domSPrun=domSPrun)
 
 ###reset names
@@ -204,15 +216,15 @@ abline(0,1)
 save(step.modelV,step.modelB,step.modelD,step.modelH,
      step.modelBconif,step.modelBbl,
      step.modelWabg,step.modelWblg,
-     file="surErrMods/surMod_Step1.rdata") ###needs to be changed update name
-
+     file=paste0("surErrMods/surMod_Step1_cal",cal,".rdata")) ###needs to be changed update name
 
 
 #####Run for second step 2018-2021
 
 nYears2 = yearEnd-year2
 # Region = nfiareas[ID==r_no, Region]
-initPrebas = create_prebas_input.f(clim, data.sample, nYears = nYears2, 
+initPrebas = create_prebas_input.f(clim, pX = pCROBAS,
+                                   data.sample, nYears = nYears2, 
                                    startSim = year2,domSPrun=domSPrun)
 
 print("model initialized")
@@ -343,5 +355,5 @@ abline(0,1)
 save(step.modelV2,step.modelB2,step.modelD2,step.modelH2,
      step.modelBconif2,step.modelBbl2,
      step.modelWabg2,step.modelWblg2,
-     file="surErrMods/surMod_Step2.rdata") ###needs to be changed update name
+     file=paste0("surErrMods/surMod_Step2_cal",cal,".rdata")) ###needs to be changed update name
 

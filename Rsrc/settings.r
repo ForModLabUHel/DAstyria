@@ -9,6 +9,7 @@ if(!exists("extNew")) extNew <- c(550000,550500,5200000,5200500)
 if(!exists("CSCrun")){
   CSCrun = F ### set to TRUE if you are running on CSC
 }
+if(!exists("cal")) cal = "austria"
 fracTest <- 0.2 ###fraction of test area
 maxSitesRun <- 20000
 maxSitesRunTest <- 20000

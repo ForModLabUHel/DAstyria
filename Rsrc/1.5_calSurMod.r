@@ -1,4 +1,6 @@
 setwd("/scratch/project_2000994/PREBASruns/FCMaustria/Rsrc/")
+library(MASS)
+library(minpack.lm)
 library(devtools)
 source("localSettings.r") # use settings in local directory if one exists
 
@@ -104,35 +106,33 @@ Hx <- out[,yearX,11,1,1] * out[,yearX,13,1,1]/Bx +
   out[,yearX,11,2,1] * out[,yearX,13,2,1]/Bx
 Dx <- out[,yearX,12,1,1] * out[,yearX,13,1,1]/Bx +
   out[,yearX,12,2,1] * out[,yearX,13,2,1]/Bx
+SVI1 <- rowSums(out[,1,43,,1])
+Wabg1 <- rowSums(out[,1,24,,1]) + rowSums(out[,1,31,,1]) + rowSums(out[,1,33,,1])
+Wblg1 <- rowSums(out[,1,25,,1]) + rowSums(out[,1,32,,1])
 
 PREBx <- data.table(segID=initPrebas$siteInfo[,1],V3 = Vx, B3 = Bx,
                     H3 = Hx, D3 = Dx,Wabg3=Wabgx,Wblg3=Wblgx,
-                    Bcon3=Bconx,Bbl3=Bblx,Bh3=Bx*Hx)
+                    Bcon3=Bconx,Bbl3=Bblx,Bh3=Bx*Hx,SVI1=SVI1,
+                    Wblg1=Wblg1, Wabg1 = Wabg1)
 print("runs completed")
 
 
 ####build surrogate model
-library(MASS)
-library(minpack.lm)
 ### Run settings & functions
 
 # load("C:/Users/minunno/GitHub/satRuns/data/inputUncer.rdata")
 load(url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/data/inputUncer.rdata"))
-# load(paste0(procDataPath,"init",startingYear,"/","st",siteTypeX,"/XYsegID.rdata"))  
-# load(paste0("output/init",startingYear,"/","st",siteTypeX,"/CurrClim_sample1.rdata"))  
-# load(paste0("procData/init",startingYear,"/","st",siteTypeX,"/uniqueData.rdata"))  
-# load(paste0("outDT/init",startingYear,"/","st",siteTypeX,"/V_NoHarv_CurrClimlayerall.rdata"))  
-# Vmod2019 <- rowSums(out[,yearX,6,])
-# load(paste0("initPrebas/init",startingYear,"/","st",siteTypeX,"/CurrClim_sample1.rdata"))  
+
 dataX <- data.table(cbind(initPrebas$multiInitVar[,3:5,1],initPrebas$multiInitVar[,5,2],
                           initPrebas$siteInfo[,3],
                           PREBx$V3,PREBx$B3,PREBx$H3,PREBx$D3,
                           PREBx$Bcon3,PREBx$Bbl3,
                           PREBx$Wabg3,PREBx$Wblg3,
-                          PREBx$Bh3))
+                          PREBx$Bh3,PREBx$SVI1,PREBx$Wblg1,PREBx$Wabg1))
 setnames(dataX,c("H","D","BAconif","BAbl","st","Vmod","Bmod",
                  "Hmod","Dmod","BAconifmod","BAblmod",
-                 "Wabgmod","Wblgmod","Bhmod"))
+                 "Wabgmod","Wblgmod","Bhmod","SVI1mod",
+                 "Wblg1mod","Wabg1mod"))
 # if(!all(unique(dataX$st) %in% unique(uniqueData$siteType))) stop("not all siteTypes of the tile are in the sample")
 
 #### Here we use stepwise regression to construct an emulator for stand variables prediction
@@ -170,29 +170,15 @@ step.modelWabg <- stepAIC(full.modelWabg, direction = "both",
 full.modelWblg <-lm(Wblgmod~Hmod+Dmod+Bhmod+BAconifmod+BAblmod+st,data=dataX)
 step.modelWblg <- stepAIC(full.modelWblg, direction = "both",
                           trace = FALSE)
-# start<-as.vector(full.model$coefficients)
-### Anonther option is to use nonlinear regression, which differed in error assumption. 
-# full.model0<-lm(lnVmod~H+D+SDI+BAh+BAp+BAsp+BAb+st,data=dataX)
-# start<-as.vector(full.model0$coefficients)
-# nonlinear<-nlsLM(Vmod~exp(a+b*H+c*D+d*SDI+e*BAh+f*BAp+g*BAsp+h*BAb+
-#                           i2*as.numeric(st==2)+
-#                           i3*as.numeric(st==3)+
-#                           i4*as.numeric(st==4)+
-#                           i5*as.numeric(st==5)
-#                         ),
-#                data=dataX,start = list(a=start[1],
-#                                  b=start[2],
-#                                  c=start[3],
-#                                  d=start[4],
-#                                  e=start[5],
-#                                  f=start[6],
-#                                  g=start[7],
-#                                  h=start[8],
-#                                  i2=start[9],
-#                                  i3=start[10],
-#                                  i4=start[11],
-#                                  i5=start[12]
-#                                  ))
+full.modelSVI1 <-lm(SVI1mod~Hmod+Dmod+Bhmod+BAconifmod+BAblmod+st,data=dataX)
+step.modelSVI1 <- stepAIC(full.modelSVI1, direction = "both",
+                          trace = FALSE)
+full.modelWblg1 <-lm(Wblg1mod~Hmod+Dmod+Bhmod+BAconifmod+BAblmod+st,data=dataX)
+step.modelWblg1 <- stepAIC(full.modelWblg1, direction = "both",
+                           trace = FALSE)
+full.modelWabg1 <-lm(Wabg1mod~Hmod+Dmod+Bhmod+BAconifmod+BAblmod+st,data=dataX)
+step.modelWabg1 <- stepAIC(full.modelWabg1, direction = "both",
+                           trace = FALSE)
 #     
 plot(step.modelV$fitted.values,dataX$Vmod,pch=".",col=2)
 abline(0,1)
@@ -210,12 +196,20 @@ plot(step.modelWabg$fitted.values,dataX$Wabgmod,pch=".",col=2)
 abline(0,1)
 plot(step.modelWblg$fitted.values,dataX$Wblgmod,pch=".",col=2)
 abline(0,1)
+plot(step.modelSVI1$fitted.values,dataX$SVI1mod,pch=".",col=2)
+abline(0,1)
+plot(step.modelWblg1$fitted.values,dataX$Wblg1mod,pch=".",col=2)
+abline(0,1)
+plot(step.modelWabg1$fitted.values,dataX$Wabg1mod,pch=".",col=2)
+abline(0,1)
+
 
 # summary(nonlinear)
 # summary(step.model)
 save(step.modelV,step.modelB,step.modelD,step.modelH,
      step.modelBconif,step.modelBbl,
-     step.modelWabg,step.modelWblg,
+     step.modelWabg,step.modelWblg,step.modelSVI1,
+     step.modelWblg1,step.modelWabg1,
      file=paste0("surErrMods/surMod_Step1_cal",cal,".rdata")) ###needs to be changed update name
 
 
@@ -242,37 +236,32 @@ Hx <- out[,yearX,11,1,1] * out[,yearX,13,1,1]/Bx +
   out[,yearX,11,2,1] * out[,yearX,13,2,1]/Bx
 Dx <- out[,yearX,12,1,1] * out[,yearX,13,1,1]/Bx +
   out[,yearX,12,2,1] * out[,yearX,13,2,1]/Bx
+SVI1 <- rowSums(out[,1,43,,1])
+Wabg1 <- rowSums(out[,1,24,,1]) + rowSums(out[,1,31,,1]) + rowSums(out[,1,33,,1])
+Wblg1 <- rowSums(out[,1,25,,1]) + rowSums(out[,1,32,,1])
 
 PREBx <- data.table(segID=initPrebas$siteInfo[,1],V3 = Vx, B3 = Bx,
                     H3 = Hx, D3 = Dx,Wabg3=Wabgx,Wblg3=Wblgx,
-                    Bcon3=Bconx,Bbl3=Bblx,Bh3=Bx*Hx)
+                    Bcon3=Bconx,Bbl3=Bblx,Bh3=Bx*Hx,SVI1=SVI1,
+                    Wblg1=Wblg1, Wabg1 = Wabg1)
+
 print("runs completed")
 
-
-
 ####build surrogate model
-library(MASS)
-library(minpack.lm)
 ### Run settings & functions
 
 # load("C:/Users/minunno/GitHub/satRuns/data/inputUncer.rdata")
 load(url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/data/inputUncer.rdata"))
-# load(paste0(procDataPath,"init",startingYear,"/","st",siteTypeX,"/XYsegID.rdata"))  
-# load(paste0("output/init",startingYear,"/","st",siteTypeX,"/CurrClim_sample1.rdata"))  
-# load(paste0("procData/init",startingYear,"/","st",siteTypeX,"/uniqueData.rdata"))  
-# load(paste0("outDT/init",startingYear,"/","st",siteTypeX,"/V_NoHarv_CurrClimlayerall.rdata"))  
-# Vmod2019 <- rowSums(out[,yearX,6,])
-# load(paste0("initPrebas/init",startingYear,"/","st",siteTypeX,"/CurrClim_sample1.rdata"))  
 dataX <- data.table(cbind(initPrebas$multiInitVar[,3:5,1],initPrebas$multiInitVar[,5,2],
                           initPrebas$siteInfo[,3],
                           PREBx$V3,PREBx$B3,PREBx$H3,PREBx$D3,
                           PREBx$Bcon3,PREBx$Bbl3,
                           PREBx$Wabg3,PREBx$Wblg3,
-                          PREBx$Bh3))
+                          PREBx$Bh3,PREBx$SVI1,PREBx$Wblg1,PREBx$Wabg1))
 setnames(dataX,c("H","D","BAconif","BAbl","st","Vmod","Bmod",
                  "Hmod","Dmod","BAconifmod","BAblmod",
-                 "Wabgmod","Wblgmod","Bhmod"))
-# if(!all(unique(dataX$st) %in% unique(uniqueData$siteType))) stop("not all siteTypes of the tile are in the sample")
+                 "Wabgmod","Wblgmod","Bhmod","SVI1mod",
+                 "Wblg1mod","Wabg1mod"))
 
 #### Here we use stepwise regression to construct an emulator for stand variables prediction
 # dataX$lnVmod<-log(dataX$Vmod)
@@ -309,30 +298,16 @@ step.modelWabg2 <- stepAIC(full.modelWabg, direction = "both",
 full.modelWblg <-lm(Wblgmod~Hmod+Dmod+Bhmod+BAconifmod+BAblmod+st,data=dataX)
 step.modelWblg2 <- stepAIC(full.modelWblg, direction = "both",
                            trace = FALSE)
-# start<-as.vector(full.model$coefficients)
-### Anonther option is to use nonlinear regression, which differed in error assumption. 
-# full.model0<-lm(lnVmod~H+D+SDI+BAh+BAp+BAsp+BAb+st,data=dataX)
-# start<-as.vector(full.model0$coefficients)
-# nonlinear<-nlsLM(Vmod~exp(a+b*H+c*D+d*SDI+e*BAh+f*BAp+g*BAsp+h*BAb+
-#                           i2*as.numeric(st==2)+
-#                           i3*as.numeric(st==3)+
-#                           i4*as.numeric(st==4)+
-#                           i5*as.numeric(st==5)
-#                         ),
-#                data=dataX,start = list(a=start[1],
-#                                  b=start[2],
-#                                  c=start[3],
-#                                  d=start[4],
-#                                  e=start[5],
-#                                  f=start[6],
-#                                  g=start[7],
-#                                  h=start[8],
-#                                  i2=start[9],
-#                                  i3=start[10],
-#                                  i4=start[11],
-#                                  i5=start[12]
-#                                  ))
-#     
+full.modelSVI1 <-lm(SVI1mod~Hmod+Dmod+Bhmod+BAconifmod+BAblmod+st,data=dataX)
+step.modelSVI1_2 <- stepAIC(full.modelSVI1, direction = "both",
+                            trace = FALSE)
+full.modelWblg1 <-lm(Wblg1mod~Hmod+Dmod+Bhmod+BAconifmod+BAblmod+st,data=dataX)
+step.modelWblg1_2 <- stepAIC(full.modelWblg1, direction = "both",
+                             trace = FALSE)
+full.modelWabg1 <-lm(Wabg1mod~Hmod+Dmod+Bhmod+BAconifmod+BAblmod+st,data=dataX)
+step.modelWabg1_2 <- stepAIC(full.modelWabg1, direction = "both",
+                             trace = FALSE)
+
 plot(step.modelV2$fitted.values,dataX$Vmod,pch=".",col=2)
 abline(0,1)
 plot(step.modelB2$fitted.values,dataX$Bmod,pch=".",col=2)
@@ -349,11 +324,20 @@ plot(step.modelWabg2$fitted.values,dataX$Wabgmod,pch=".",col=2)
 abline(0,1)
 plot(step.modelWblg2$fitted.values,dataX$Wblgmod,pch=".",col=2)
 abline(0,1)
+plot(step.modelSVI1_2$fitted.values,dataX$SVI1mod,pch=".",col=2)
+abline(0,1)
+plot(step.modelWblg1_2$fitted.values,dataX$Wblg1mod,pch=".",col=2)
+abline(0,1)
+plot(step.modelWabg1_2$fitted.values,dataX$Wabg1mod,pch=".",col=2)
+abline(0,1)
 
+
+# summary(nonlinear)
+# summary(step.model)
 # summary(nonlinear)
 # summary(step.model)
 save(step.modelV2,step.modelB2,step.modelD2,step.modelH2,
      step.modelBconif2,step.modelBbl2,
-     step.modelWabg2,step.modelWblg2,
+     step.modelWabg2,step.modelWblg2,step.modelSVI1_2,
+     step.modelWblg1_2,step.modelWabg1_2,
      file=paste0("surErrMods/surMod_Step2_cal",cal,".rdata")) ###needs to be changed update name
-

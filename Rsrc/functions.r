@@ -1087,3 +1087,102 @@ pSVDA_2steps <- function(segIDx,nSample,
     ))
   } 
 }
+
+
+
+calcVW <- function(dataInput,startSim,pCROBAS,step.modelSVIx,siteTypeX=3){
+  ###default settings
+  domSPrun=0
+  nLayers <- 2
+  maxNlayers = nLayers
+  
+  data.sample <- dataInput
+  nSites <- nrow(data.sample)
+  
+  setnames(data.sample,c(paste0("ba",startSim),paste0("h",startSim),
+                         paste0("dbh",startSim),paste0("bl",startSim),
+                         paste0("conif",startSim)),
+           c("ba","h","dbh","bl","conif"))
+  
+  initVar <- array(NA, dim=c(nSites,7,nLayers))
+  data.sample[,baConif:= (ba * conif/(conif+bl))]
+  data.sample[,baBl:= (ba * bl/(conif+bl))]
+  data.sample[,dbhConif:= dbh]
+  data.sample[,dbhBl:= dbh]
+  data.sample[,hConif:= h]
+  data.sample[,hBl:= h]
+  data.sample[,N:=ba/(pi*(dbh/2)^2/10000)]
+  areas <- data.sample$area
+  initVar[,1,] <- as.numeric(rep(c(1,3),each=nSites))
+  initVar[,2,] <- as.numeric(data.sample[,h])*3.3  # round(as.numeric(data.sample[,age]))  ##### set to 1 because we do not know age
+  initVar[,3,] <- as.numeric(data.sample[,h])
+  initVar[,4,] <- as.numeric(data.sample[,dbh])
+  if(domSPrun==1){
+    ##initialize model only for dominant species##
+    initVar[,5,] = 0.
+    ix = unlist(data.sample[, which.max(c(pineP, spruceP, blp)), by=1:nrow(data.sample)] [, 2])
+    for(jx in 1:nSites) initVar[jx,5,ix[jx]] = as.numeric(data.sample[, ba])[jx]
+  } else{
+    ###initialize model for mixed forest runs
+    initVar[,5,1] <- as.numeric(data.sample[,(ba * conif/(conif+bl))])
+    initVar[,5,2] <- as.numeric(data.sample[,(ba * bl/(conif+bl))])
+  }
+  
+  multiInitVar <- initVar
+  pHcMod = pHcM
+  multiInitVar <- aaply(multiInitVar,1,findHcNAs,pHcMod)
+  ###age cannot be lower than 1 year
+  multiInitVar[,2,][which(multiInitVar[,2,]<1)] <- 1
+  ####compute A
+  if(all(is.na(multiInitVar[,7,]))|all(multiInitVar[,7,]==0)){
+    for(ikj in 1:maxNlayers){
+      not0 <- which(multiInitVar[,3,ikj]>0)
+      p_ksi <- pCROBAS[38,multiInitVar[not0,1,ikj]]
+      p_rhof <- pCROBAS[15,multiInitVar[not0,1,ikj]]
+      p_z <- pCROBAS[11,multiInitVar[not0,1,ikj]]
+      Lc <- multiInitVar[not0,3,ikj] - multiInitVar[not0,6,ikj]
+      A <- as.numeric(p_ksi/p_rhof * Lc^p_z)
+      multiInitVar[not0,7,ikj] <- A
+    }
+  }
+  
+  LcCheck <- multiInitVar[,3,] - multiInitVar[,6,]
+  if(any(LcCheck<0.)) return("check, some Lc is negative")
+  
+  multiInitVar[,6:7,][which(is.na(multiInitVar[,6:7,]))] <- 0
+  
+  initVarX <- abind(multiInitVar,matrix(siteTypeX,nSites,maxNlayers),along=2)
+  biomasses <- array(apply(initVarX,1,initBiomasses,pCro=pCROBAS),dim=c(12,maxNlayers,nSites))
+  biomasses <- aperm(biomasses,c(3,1,2))
+  biomasses[which(is.na(biomasses))] <- 0
+  abgW <- apply(biomasses[,c(1,6,9:10),],1,sum)
+  blgW <- apply(biomasses[,c(2,7),],1,sum)
+  V <- rowSums(biomasses[,11,])
+  
+  setnames(data.sample,c("h","dbh","bl","conif"),
+           c("Hmod","Dmod","BAblmod","BAconifmod"))
+  
+  
+  data.sample$st <- factor(siteTypeX)
+  data.sample[,BAtot:=(BAconifmod+BAblmod)]
+  data.sample[,Bhmod:=BAtot*Hmod]
+  # data.sample[,N:=BAtot/(pi*(D/200)^2)]
+  # b = -1.605 ###coefficient of Reineke
+  # data.sample[,SDI:=N *(D/10)^b]
+  # data.sample[,rootBAconif:=BAconif^0.5]
+  # data.sample[,BAconif2:=BAconif^(2)]
+  
+  
+  dataInput[,SVIprebas := pmax(0.,predict(step.modelSVIx,newdata=data.sample))]
+  
+  dataInput[,abgWprebas:=abgW]
+  dataInput[,blgWprebas:=blgW]
+  dataInput[,Vprebas:=V]
+  
+  # setnames(dataInput,c("abgWprebas","blgWprebas","Vprebas","SVIprebas"),
+  #          paste0(c("abgWprebas","blgWprebas","Vprebas","SVIprebas"),startSim))
+  # 
+  
+  return(dataInput)
+  
+}

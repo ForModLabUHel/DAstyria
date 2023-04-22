@@ -22,6 +22,7 @@ conifPerRast2021 <- "finalRast/FCM_STY_2021_CP_10M_8BITS-Styria.tif"
 # Run settings 
 library(devtools)
 source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc/settings.r")
+source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc/functions.r")
 setwd(generalPath)
 
 if(cal=="austria"){
@@ -345,7 +346,7 @@ siteTypeX = 3
 yearX=yearRast
 
 system.time({
-  ops <- calcVW(data.all,yearX,pCROBAS,
+  ops <- calcVW(data.all[1:10000],yearX,pCROBAS,
                 step.modelSVIx = step.modelSVIx, siteTypeX = siteTypeX)
 })
 

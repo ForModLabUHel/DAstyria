@@ -40,20 +40,20 @@ load(paste0("surErrMods/surMod_Step2_cal",cal,".rdata"))
 #   source("/scratch/project_2000994/PREBASruns/assessCarbon/Rsrc/mainSettings.r") # in CSC
 # }
 
-if (splitRun) {
-  print(paste("# of splits", nSplit))
-  # If output is set to be split to smaller parts (splitRun = TRUE), create separate
-  # folder for the split data tables.
-  mkfldr_split <- "procDataFinal/split"
-  if(!dir.exists(file.path(generalPath, mkfldr_split))) {
-    dir.create(file.path(generalPath, mkfldr_split), recursive = TRUE)
-  }
-} 
-
-mkfldr <- "procDataFinal"
-if(!dir.exists(file.path(generalPath, mkfldr))) {
-  dir.create(file.path(generalPath, mkfldr), recursive = TRUE)
-}
+# if (splitRun) {
+#   print(paste("# of splits", nSplit))
+#   # If output is set to be split to smaller parts (splitRun = TRUE), create separate
+#   # folder for the split data tables.
+#   mkfldr_split <- "procDataFinal/split"
+#   if(!dir.exists(file.path(generalPath, mkfldr_split))) {
+#     dir.create(file.path(generalPath, mkfldr_split), recursive = TRUE)
+#   }
+# } 
+# 
+# mkfldr <- "procDataFinal"
+# if(!dir.exists(file.path(generalPath, mkfldr))) {
+#   dir.create(file.path(generalPath, mkfldr), recursive = TRUE)
+# }
 
 ###extract CurrClim IDs
 rastRef <- raster(baRast2015)
@@ -345,7 +345,7 @@ siteTypeX = 3
 yearX=yearRast
 
 system.time({
-  ops <- calcVW(data.all[1:10000],yearX,pCROBAS,
+  ops <- calcVW(data.all,yearX,pCROBAS,
                 step.modelSVIx = step.modelSVIx, siteTypeX = siteTypeX)
 })
 

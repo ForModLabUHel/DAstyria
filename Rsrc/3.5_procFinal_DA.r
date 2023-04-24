@@ -123,24 +123,24 @@ if(FALSE){
 # 
 ##filter data 
 # if(mgmtmask==T) data.all <- data.all[mgmtmask == 0]
-data.all[ba2015 %in% baNA]$ba2015 <- -999
-data.all[ba2018 %in% baNA]$ba2018 <- -999
-data.all[ba2021 %in% baNA]$ba2021 <- -999
-data.all[bl2015 %in% blPerNA]$bl2015 <- -999
-data.all[bl2018 %in% blPerNA]$bl2018 <- -999
-data.all[bl2021 %in% blPerNA]$bl2021 <- -999
-data.all[dbh2015 %in% dbhNA]$dbh2015 <- -999
-data.all[dbh2018 %in% dbhNA]$dbh2018 <- -999
-data.all[dbh2021 %in% dbhNA]$dbh2021 <- -999
-data.all[v2015 %in% vNA]$v2015 <- -999
-data.all[v2018 %in% vNA]$v2018 <- -999
-data.all[v2021 %in% vNA]$v2021 <- -999
-data.all[h2015 %in% hNA]$h2015 <- -999
-data.all[h2018 %in% hNA]$h2018 <- -999
-data.all[h2021 %in% hNA]$h2021 <- -999
-data.all[conif2015 %in% pinePerNA]$conif2015 <- -999
-data.all[conif2018 %in% pinePerNA]$conif2018 <- -999
-data.all[conif2021 %in% pinePerNA]$conif2021 <- -999
+# data.all[ba2015 %in% baNA]$ba2015 <- -999
+# data.all[ba2018 %in% baNA]$ba2018 <- -999
+# data.all[ba2021 %in% baNA]$ba2021 <- -999
+# data.all[bl2015 %in% blPerNA]$bl2015 <- -999
+# data.all[bl2018 %in% blPerNA]$bl2018 <- -999
+# data.all[bl2021 %in% blPerNA]$bl2021 <- -999
+# data.all[dbh2015 %in% dbhNA]$dbh2015 <- -999
+# data.all[dbh2018 %in% dbhNA]$dbh2018 <- -999
+# data.all[dbh2021 %in% dbhNA]$dbh2021 <- -999
+# data.all[v2015 %in% vNA]$v2015 <- -999
+# data.all[v2018 %in% vNA]$v2018 <- -999
+# data.all[v2021 %in% vNA]$v2021 <- -999
+# data.all[h2015 %in% hNA]$h2015 <- -999
+# data.all[h2018 %in% hNA]$h2018 <- -999
+# data.all[h2021 %in% hNA]$h2021 <- -999
+# data.all[conif2015 %in% pinePerNA]$conif2015 <- -999
+# data.all[conif2018 %in% pinePerNA]$conif2018 <- -999
+# data.all[conif2021 %in% pinePerNA]$conif2021 <- -999
 # data.all <- data.all[!spruceP %in% sprucePerNA]
 # data.all <- data.all[!siteType2015 %in% siteTypeNA]
 # data.all <- data.all[!siteType2018 %in% siteTypeNA]

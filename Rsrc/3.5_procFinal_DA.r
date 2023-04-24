@@ -61,8 +61,8 @@ load(paste0("surErrMods/surMod_Step2_cal",cal,".rdata"))
 rastRef <- raster(baRast2015)
 if(testRun){
   extNew <- extent(rastRef)
-  extNew[1:2]   <- (extent(rastRef)[1] + (extent(rastRef)[2]))/2 + c(20000,30000)
-  extNew[3:4]   <- (extent(rastRef)[3] + (extent(rastRef)[4]))/2 + c(9000,10000)
+  extNew[1:2]   <- (extent(rastRef)[1] + (extent(rastRef)[2]))/2 + c(10000,30000)
+  extNew[3:4]   <- (extent(rastRef)[3] + (extent(rastRef)[4]))/2 + c(-10000,10000)
   rastRef <- crop(rastRef,extNew)
   maxSitesRun <- maxSitesRunTest
 }

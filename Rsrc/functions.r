@@ -1164,8 +1164,10 @@ calcVW <- function(dataInput,startSim,pCROBAS,step.modelSVIx,siteTypeX=3){
   
   
   data.sample$st <- factor(siteTypeX)
-  data.sample[,BAtot:=(BAconifmod+BAblmod)]
+  data.sample[,BAtot:=(baConif+baBl)]
   data.sample[,Bhmod:=BAtot*Hmod]
+  data.sample[,BAblmod := baBl]
+  data.sample[,BAconifmod := baConif]
   # data.sample[,N:=BAtot/(pi*(D/200)^2)]
   # b = -1.605 ###coefficient of Reineke
   # data.sample[,SDI:=N *(D/10)^b]
@@ -1186,3 +1188,4 @@ calcVW <- function(dataInput,startSim,pCROBAS,step.modelSVIx,siteTypeX=3){
   return(dataInput)
   
 }
+

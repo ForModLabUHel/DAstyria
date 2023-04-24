@@ -1181,7 +1181,7 @@ calcVW <- function(dataInput,startSim,pCROBAS,step.modelSVIx,siteTypeX=3){
   data.sample[,abgWprebas:=abgW]
   data.sample[,blgWprebas:=blgW]
   data.sample[,Vprebas:=V]
-  ciao <- merge(data.sample[,.(x,y,SVIprebas,abgWprebas,blgWprebas,Vprebas)],dataInput,all.y=T)
+  dataInput <- merge(data.sample[,.(x,y,SVIprebas,abgWprebas,blgWprebas,Vprebas)],dataInput,all.y=T)
   
   
   # dataInput[,abgWprebas:=abgW]

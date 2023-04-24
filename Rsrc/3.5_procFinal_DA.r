@@ -345,6 +345,9 @@ if(FALSE){
 # 
 siteTypeX = 3
 
+# yearRast=2021
+# step.modelSVIx = step.modelSVI1
+
 system.time({
   ops <- calcVW(data.all,yearRast,pCROBAS,
                 step.modelSVIx = step.modelSVIx, siteTypeX = siteTypeX)
@@ -366,5 +369,3 @@ writeRaster(SVIpreb,filename = paste0("finalRast/SVI_prebas_",yearRast,".tif"),o
 writeRaster(WblgPreb,filename = paste0("finalRast/Wbl_prebas_",yearRast,".tif"),overwrite=TRUE)
 writeRaster(WabgPreb,filename = paste0("finalRast/Wabg_prebas_",yearRast,".tif"),overwrite=TRUE)
 writeRaster(Vpreb,filename = paste0("finalRast/V_prebas_",yearRast,".tif"),overwrite=TRUE)
-
-

@@ -351,6 +351,10 @@ system.time({
 
 print("calculations completed")
 
+###convert biomasses from kgC/ha to tons(DM)/ha
+ops$abgWprebas <- ops$abgWprebas *2 / 1000
+ops$blgWprebas <- ops$blgWprebas *2 / 1000
+
 SVIpreb <- rasterFromXYZ(ops[,.(x,y,SVIprebas)],crs=crs(rastRef))
 WblgPreb <- rasterFromXYZ(ops[,.(x,y,blgWprebas)],crs=crs(rastRef))
 WabgPreb <- rasterFromXYZ(ops[,.(x,y,abgWprebas)],crs=crs(rastRef))

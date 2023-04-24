@@ -1,5 +1,12 @@
 if(file.exists("localSettings.r")) {source("localSettings.r")} # use settings file from local directory if one exists
 
+# Run settings 
+library(devtools)
+source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc/settings.r")
+source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc/functions.r")
+setwd(generalPath)
+
+
 baRast2015 <- "finalRast/FCM_STY_2015_G_10M_8BITS-Styria.tif"
 blPerRast2015 <- "finalRast/FCM_STY_2015_BLP_10M_8BITS-Styria.tif"
 dbhRast2015 <- "finalRast/FCM_STY_2015_D_10M_8BITS-Styria.tif"
@@ -18,12 +25,6 @@ dbhRast2021 <- "finalRast/FCM_STY_2021_D_10M_8BITS-Styria.tif"
 hRast2021 <- "finalRast/FCM_STY_2021_H_10M_16BITS-Styria.tif"
 conifPerRast2021 <- "finalRast/FCM_STY_2021_CP_10M_8BITS-Styria.tif"
 
-
-# Run settings 
-library(devtools)
-source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc/settings.r")
-source_url("https://raw.githubusercontent.com/ForModLabUHel/DAstyria/master/Rsrc/functions.r")
-setwd(generalPath)
 
 if(cal=="austria"){
   load("/scratch/project_2000994/calibrations/calAustria/outCal/pCROBASaustria.rdata")

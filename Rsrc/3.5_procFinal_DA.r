@@ -369,3 +369,5 @@ writeRaster(SVIpreb,filename = paste0("finalRast/SVI_prebas_",yearRast,".tif"),o
 writeRaster(WblgPreb,filename = paste0("finalRast/Wbl_prebas_",yearRast,".tif"),overwrite=TRUE)
 writeRaster(WabgPreb,filename = paste0("finalRast/Wabg_prebas_",yearRast,".tif"),overwrite=TRUE)
 writeRaster(Vpreb,filename = paste0("finalRast/V_prebas_",yearRast,".tif"),overwrite=TRUE)
+
+

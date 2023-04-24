@@ -357,7 +357,7 @@ WabgPreb <- rasterFromXYZ(ops[,.(x,y,abgWprebas)],crs=crs(rastRef))
 Vpreb <- rasterFromXYZ(ops[,.(x,y,Vprebas)],crs=crs(rastRef))
 # Save split tables
 
-writeRaster(SVIpreb,filename = paste0("finalRast/SVI_prebas_",yearRast,".tif"))
-writeRaster(WblgPreb,filename = paste0("finalRast/Wbl_prebas_",yearRast,".tif"))
-writeRaster(WabgPreb,filename = paste0("finalRast/Wabg_prebas_",yearRast,".tif"))
-writeRaster(Vpreb,filename = paste0("finalRast/V_prebas_",yearRast,".tif"))
+writeRaster(SVIpreb,filename = paste0("finalRast/SVI_prebas_",yearRast,".tif"),overwrite=TRUE)
+writeRaster(WblgPreb,filename = paste0("finalRast/Wbl_prebas_",yearRast,".tif"),overwrite=TRUE)
+writeRaster(WabgPreb,filename = paste0("finalRast/Wabg_prebas_",yearRast,".tif"),overwrite=TRUE)
+writeRaster(Vpreb,filename = paste0("finalRast/V_prebas_",yearRast,".tif"),overwrite=TRUE)

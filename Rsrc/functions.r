@@ -1104,6 +1104,8 @@ calcVW <- function(dataInput,startSim,pCROBAS,step.modelSVIx,siteTypeX=3){
                          paste0("conif",startSim)),
            c("ba","h","dbh","bl","conif"))
   
+  data.sample <- data.sample[which(ba<250)]
+  nSites <- nrow(data.sample)
   initVar <- array(NA, dim=c(nSites,7,nLayers))
   data.sample[,baConif:= (ba * conif/(conif+bl))]
   data.sample[,baBl:= (ba * bl/(conif+bl))]
@@ -1112,7 +1114,7 @@ calcVW <- function(dataInput,startSim,pCROBAS,step.modelSVIx,siteTypeX=3){
   data.sample[,hConif:= h]
   data.sample[,hBl:= h]
   data.sample[,N:=ba/(pi*(dbh/2)^2/10000)]
-  areas <- data.sample$area
+  # areas <- data.sample$area
   initVar[,1,] <- as.numeric(rep(c(1,3),each=nSites))
   initVar[,2,] <- as.numeric(data.sample[,h])*3.3  # round(as.numeric(data.sample[,age]))  ##### set to 1 because we do not know age
   initVar[,3,] <- as.numeric(data.sample[,h])
@@ -1175,11 +1177,16 @@ calcVW <- function(dataInput,startSim,pCROBAS,step.modelSVIx,siteTypeX=3){
   # data.sample[,BAconif2:=BAconif^(2)]
   
   
-  dataInput[,SVIprebas := pmax(0.,predict(step.modelSVIx,newdata=data.sample))]
+  data.sample[,SVIprebas := pmax(0.,predict(step.modelSVIx,newdata=data.sample))]
+  data.sample[,abgWprebas:=abgW]
+  data.sample[,blgWprebas:=blgW]
+  data.sample[,Vprebas:=V]
+  ciao <- merge(data.sample[,.(x,y,SVIprebas,abgWprebas,blgWprebas,Vprebas)],dataInput,all.y=T)
   
-  dataInput[,abgWprebas:=abgW]
-  dataInput[,blgWprebas:=blgW]
-  dataInput[,Vprebas:=V]
+  
+  # dataInput[,abgWprebas:=abgW]
+  # dataInput[,blgWprebas:=blgW]
+  # dataInput[,Vprebas:=V]
   
   # setnames(dataInput,c("abgWprebas","blgWprebas","Vprebas","SVIprebas"),
   #          paste0(c("abgWprebas","blgWprebas","Vprebas","SVIprebas"),startSim))

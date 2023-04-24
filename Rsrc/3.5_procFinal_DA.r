@@ -62,7 +62,7 @@ rastRef <- raster(baRast2015)
 if(testRun){
   extNew <- extent(rastRef)
   extNew[1:2]   <- (extent(rastRef)[1] + (extent(rastRef)[2]))/2 + c(20000,30000)
-  extNew[3:4]   <- (extent(rastRef)[3] + (extent(rastRef)[4]))/2 + c(0,10000)
+  extNew[3:4]   <- (extent(rastRef)[3] + (extent(rastRef)[4]))/2 + c(9000,10000)
   rastRef <- crop(rastRef,extNew)
   maxSitesRun <- maxSitesRunTest
 }
@@ -366,3 +366,5 @@ writeRaster(SVIpreb,filename = paste0("finalRast/SVI_prebas_",yearRast,".tif"),o
 writeRaster(WblgPreb,filename = paste0("finalRast/Wbl_prebas_",yearRast,".tif"),overwrite=TRUE)
 writeRaster(WabgPreb,filename = paste0("finalRast/Wabg_prebas_",yearRast,".tif"),overwrite=TRUE)
 writeRaster(Vpreb,filename = paste0("finalRast/V_prebas_",yearRast,".tif"),overwrite=TRUE)
+
+

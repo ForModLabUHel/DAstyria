@@ -82,7 +82,7 @@ load(file=paste0("procData/splitFinal/finalRasterData_id",i,".rdata"))
 # }
 # data.all$split_id[((length(splitRange)-1)*split_length+1):(nrow(data.all))] <- length(splitRange)
 # 
-# print("computing")
+print("computing")
 
 system.time({
   ops <- calcVW(dataX,yearRast,pCROBAS,

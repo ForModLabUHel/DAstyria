@@ -97,7 +97,7 @@ ops$abgWprebas <- ops$abgWprebas *2 / 1000
 ops$blgWprebas <- ops$blgWprebas *2 / 1000
 
 dataX <- ops[,.(x,y,SVIprebas,blgWprebas,abgWprebas,Vprebas)]
-save(dataX,file=paste0("procData/splitFinal/data_id",splitID,".rdata"))
+save(dataX,file=paste0("procData/splitFinal/data_id",splitID,"_year",yearRast,".rdata"))
 # 
 # SVIpreb <- rasterFromXYZ(ops[,.(x,y,SVIprebas)],crs=crs(rastRef))
 # WblgPreb <- rasterFromXYZ(ops[,.(x,y,blgWprebas)],crs=crs(rastRef))

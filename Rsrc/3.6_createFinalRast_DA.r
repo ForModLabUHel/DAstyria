@@ -67,7 +67,7 @@ if(testRun){
   maxSitesRun <- maxSitesRunTest
 }
 print("loading")
-load(file=paste0("procData/splitFinal/finalRasterData_id",i,".rdata"))
+load(file=paste0("procData/splitFinal/finalRasterData_id",splitID,".rdata"))
 print("loaded")
 #      
 # load(file="procData/finalRasterData.rdata")

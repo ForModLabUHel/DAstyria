@@ -348,6 +348,8 @@ siteTypeX = 3
 # yearRast=2021
 # step.modelSVIx = step.modelSVI1
 
+save(data.all,file="finalRasterData.rdata")
+
 system.time({
   ops <- calcVW(data.all,yearRast,pCROBAS,
                 step.modelSVIx = step.modelSVIx, siteTypeX = siteTypeX)

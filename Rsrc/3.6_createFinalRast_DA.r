@@ -80,6 +80,8 @@ for (i in 2:(max(splitRange)-1)) {
 }
 data.all$split_id[((length(splitRange)-1)*split_length+1):(nrow(data.all))] <- length(splitRange)
 
+print("computing")
+
 system.time({
   ops <- calcVW(data.all[split_id==splitID],yearRast,pCROBAS,
                 step.modelSVIx = step.modelSVIx, siteTypeX = siteTypeX)

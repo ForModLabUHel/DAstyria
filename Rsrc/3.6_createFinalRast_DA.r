@@ -66,8 +66,9 @@ if(testRun){
   rastRef <- crop(rastRef,extNew)
   maxSitesRun <- maxSitesRunTest
 }
-
+print("loading")
 load(file=paste0("procData/splitFinal/finalRasterData_id",i,".rdata"))
+print("loaded")
 #      
 # load(file="procData/finalRasterData.rdata")
 # 

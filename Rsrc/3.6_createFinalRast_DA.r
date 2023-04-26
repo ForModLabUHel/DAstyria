@@ -84,7 +84,7 @@ print("computing")
 
 system.time({
   ops <- calcVW(data.all[split_id==splitID],yearRast,pCROBAS,
-                step.modelSVIx = step.modelSVIx, siteTypeX = siteTypeX)
+                step.modelSVIx = step.modelSVIx)
 })
 
 print("calculations completed")

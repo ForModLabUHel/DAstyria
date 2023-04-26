@@ -67,23 +67,25 @@ if(testRun){
   maxSitesRun <- maxSitesRunTest
 }
 
-load(file="procData/finalRasterData.rdata")
-
-splitRange <- splitIDsRaster
-split_length <- ceiling(nrow(data.all)/length(splitRange))
-data.all <- data.all[, split_id := NA]
-
-
-data.all$split_id[1:split_length] <- 1
-for (i in 2:(max(splitRange)-1)) {
-  data.all$split_id[((i-1)*split_length+1):(split_length*i)] <- i
-}
-data.all$split_id[((length(splitRange)-1)*split_length+1):(nrow(data.all))] <- length(splitRange)
-
-print("computing")
+load(file=paste0("procData/splitFinal/finalRasterData_id",i,".rdata"))
+#      
+# load(file="procData/finalRasterData.rdata")
+# 
+# splitRange <- splitIDsRaster
+# split_length <- ceiling(nrow(data.all)/length(splitRange))
+# data.all <- data.all[, split_id := NA]
+# 
+# 
+# data.all$split_id[1:split_length] <- 1
+# for (i in 2:(max(splitRange)-1)) {
+#   data.all$split_id[((i-1)*split_length+1):(split_length*i)] <- i
+# }
+# data.all$split_id[((length(splitRange)-1)*split_length+1):(nrow(data.all))] <- length(splitRange)
+# 
+# print("computing")
 
 system.time({
-  ops <- calcVW(data.all[split_id==splitID],yearRast,pCROBAS,
+  ops <- calcVW(dataX,yearRast,pCROBAS,
                 step.modelSVIx = step.modelSVIx)
 })
 

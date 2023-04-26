@@ -96,18 +96,18 @@ print("calculations completed")
 ops$abgWprebas <- ops$abgWprebas *2 / 1000
 ops$blgWprebas <- ops$blgWprebas *2 / 1000
 
-dataX <- ops[,.(x,y,SVIpreb,WblgPreb,WabgPreb,Vpreb)]
-save(dataX,file="procData/splitFinal/data_id",splitID,".rdata")
-
-SVIpreb <- rasterFromXYZ(ops[,.(x,y,SVIprebas)],crs=crs(rastRef))
-WblgPreb <- rasterFromXYZ(ops[,.(x,y,blgWprebas)],crs=crs(rastRef))
-WabgPreb <- rasterFromXYZ(ops[,.(x,y,abgWprebas)],crs=crs(rastRef))
-Vpreb <- rasterFromXYZ(ops[,.(x,y,Vprebas)],crs=crs(rastRef))
-# Save split tables
-
-writeRaster(SVIpreb,filename = paste0("finalRast/SVI_prebas_",yearRast,splitID,".tif"),overwrite=TRUE)
-writeRaster(WblgPreb,filename = paste0("finalRast/Wbl_prebas_",yearRast,splitID,".tif"),overwrite=TRUE)
-writeRaster(WabgPreb,filename = paste0("finalRast/Wabg_prebas_",yearRast,splitID,".tif"),overwrite=TRUE)
-writeRaster(Vpreb,filename = paste0("finalRast/V_prebas_",yearRast,splitID,".tif"),overwrite=TRUE)
-
-
+dataX <- ops[,.(x,y,SVIprebas,blgWprebas,abgWprebas,Vprebas)]
+save(dataX,file=paste0("procData/splitFinal/data_id",splitID,".rdata"))
+# 
+# SVIpreb <- rasterFromXYZ(ops[,.(x,y,SVIprebas)],crs=crs(rastRef))
+# WblgPreb <- rasterFromXYZ(ops[,.(x,y,blgWprebas)],crs=crs(rastRef))
+# WabgPreb <- rasterFromXYZ(ops[,.(x,y,abgWprebas)],crs=crs(rastRef))
+# Vpreb <- rasterFromXYZ(ops[,.(x,y,Vprebas)],crs=crs(rastRef))
+# # Save split tables
+# 
+# writeRaster(SVIpreb,filename = paste0("finalRast/SVI_prebas_",yearRast,splitID,".tif"),overwrite=TRUE)
+# writeRaster(WblgPreb,filename = paste0("finalRast/Wbl_prebas_",yearRast,splitID,".tif"),overwrite=TRUE)
+# writeRaster(WabgPreb,filename = paste0("finalRast/Wabg_prebas_",yearRast,splitID,".tif"),overwrite=TRUE)
+# writeRaster(Vpreb,filename = paste0("finalRast/V_prebas_",yearRast,splitID,".tif"),overwrite=TRUE)
+# 
+# 
